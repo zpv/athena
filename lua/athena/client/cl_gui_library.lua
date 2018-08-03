@@ -1,3 +1,11 @@
+--[[
+	░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+	▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+	▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
+]]
+
+local Athena = Athena
+
 function Athena.Elements.Combobox( t )
 	local pnl = vgui.Create( "DComboBox", t.parent )
 	t.w = t.w or 100
@@ -102,7 +110,6 @@ function Athena.Elements.Combobox( t )
 					end
 				end
 			end
-			hook.Add( "ULibReplicatedCvarChanged", "XLIB_" .. t.repconvar, pnl.ConVarUpdated )
 			function pnl:OnSelect( index )
 				RunConsoleCommand( t.repconvar, tostring( index - t.numOffset ) )
 			end
@@ -114,7 +121,7 @@ function Athena.Elements.Combobox( t )
 					pnl:SetText( new_val )
 				end
 			end
-			hook.Add( "ULibReplicatedCvarChanged", "XLIB_" .. t.repconvar, pnl.ConVarUpdated )
+
 			function pnl:OnSelect( index, value )
 				if t.convarblanklabel and value == "<not specified>" then value = "" end
 				RunConsoleCommand( t.repconvar, value )
@@ -278,7 +285,6 @@ function Athena.Elements.Slider( t )
 				end
 			end
 		end
-		hook.Add( "ULibReplicatedCvarChanged", "XLIB_" .. t.repconvar, pnl.ConVarUpdated )
 		function pnl:OnValueChanged( val )
 			RunConsoleCommand( t.repconvar, tostring( val ) )
 		end
@@ -289,4 +295,24 @@ function Athena.Elements.Slider( t )
 	end
 	
 	return pnl
+end
+
+local function buildFunctionArguments(str, ply)
+	local args = string.Split(str, " ")
+	for i,v in pairs(args) do
+		if v == "%p" then
+			args[i] = ply:Nick()
+		end
+	end
+	return args
+end
+
+function Athena.Elements.BuildActions(menu, ply)
+	for i,v in pairs(Athena.Actions) do
+		menu:AddOption(v[1], function() RunConsoleCommand(unpack(buildFunctionArguments(v[2], ply))) end)
+	end
+	menu:AddSpacer()
+	for i,v in pairs(Athena.Configuration.CustomActions) do
+		menu:AddOption(v[1], function() RunConsoleCommand(unpack(buildFunctionArguments(v[2], ply))) end)
+	end
 end

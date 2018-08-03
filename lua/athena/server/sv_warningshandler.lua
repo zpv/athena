@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 util.AddNetworkString("Athena_TransferWarnings")
 util.AddNetworkString("Athena_SendWarning")
@@ -19,7 +14,7 @@ util.AddNetworkString("Athena_RemoveWarning")
 
 net.Receive("Athena_RequestWarnings", function(len, ply)
 	local targetUID = net.ReadString()
-	if ply:SteamID64() ~= targetUID and not Athena.getPlayerInfo(ply) then print("No permissions ... bitch.") return end
+	if ply:SteamID64() ~= targetUID and not Athena.hasPermission(ply) then print("No permissions ... bitch.") return end
 	Athena.Server.sendWarnings(ply, targetUID)
 end)
 
@@ -101,7 +96,7 @@ Athena.Server.WarnPlayer = function(target, description, severity, warner)
 end
 
 net.Receive("Athena_SendWarning", function(len, ply)
-	if not Athena.getPlayerInfo(ply) then print("No permissions ... bitch.") return end
+	if not Athena.hasPermission(ply) then print("No permissions ... bitch.") return end
 	local targetID = net.ReadString()
 	local description = net.ReadString()
 	local severity = net.ReadUInt(2)
@@ -110,7 +105,7 @@ net.Receive("Athena_SendWarning", function(len, ply)
 end)
 
 net.Receive("Athena_RemoveWarning", function(len, ply)
-	if not Athena.getPlayerInfo(ply) then print("No permissions ... bitch.") return end
+	if not Athena.hasPermission(ply) then print("No permissions ... bitch.") return end
 
 	local warningTime = tonumber(net.ReadString())
 	local playerID = net.ReadString()
@@ -156,7 +151,7 @@ local function WarnChatHook(ply, text)
 	elseif( (string.sub(t, 1, 5) == '!warn' or string.sub(t, 1, 5) == '/warn')) then
 		if(string.len(t) == 5) then
 			ply:ConCommand("athena_warn")
-		elseif (Athena.getPlayerInfo(ply)) then
+		elseif (Athena.hasPermission(ply)) then
 			local words = parseString(text)
 			if words ~= nil then 
 				if words[2] == nil then ply:ChatPrint("Invalid syntax: !warn {player} {severity} {reason}") return end

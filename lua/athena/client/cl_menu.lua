@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 Athena.Elements = {}
 Athena.Elements.Avatars = {}
@@ -515,7 +510,7 @@ function Athena.buildMenu()
 end
 
 Athena.StartMenu = function()
-	if not Athena.getPlayerInfo(LocalPlayer()) then return end
+	if not Athena.hasPermission(LocalPlayer()) then return end
 	if Athena.Client.Queued then 
 		if (CurTime() - Athena.Client.Queued > Athena.Configuration.QueueTimeout) then
 			Athena.Client.Queued = false
@@ -546,7 +541,7 @@ concommand.Add(Athena.Configuration.ConsoleCommand, Athena.StartMenu)
 if Athena.Configuration.UseKeyBind then
 	hook.Add("Think", "AthenaToggle", function()
 		if input.IsKeyDown(Athena.Configuration.KeyBind) then
-			if not Athena.getPlayerInfo(LocalPlayer()) then return end
+			if not Athena.hasPermission(LocalPlayer()) then return end
 
 			if Athena.Client.Queued then 
 				if (CurTime() - Athena.Client.Queued > Athena.Configuration.QueueTimeout) then

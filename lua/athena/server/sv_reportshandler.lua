@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 util.AddNetworkString("Athena_TransferReports")
 util.AddNetworkString("Athena_SendReport")
@@ -96,7 +91,6 @@ Athena.Server.sendReports = function(ply)
 		if not Athena.Server.SentReports[ply:SteamID()][k] then
 			sentCount = sentCount + 1
 			net.Start("Athena_TransferReports")
-			print("SENDDD DA REPORT")
 
 			net.WriteTable(v)
 			net.WriteUInt(k, 32)
@@ -115,7 +109,7 @@ Athena.Server.sendReports = function(ply)
 end
 
 net.Receive("Athena_RequestStatuses", function(len, ply)
-	if not Athena.getPlayerInfo(ply) then print("Cannot send statuses. Access denied to: " .. ply:Nick()) return end
+	if not Athena.hasPermission(ply) then print("Cannot send statuses. Access denied to: " .. ply:Nick()) return end
 	Athena.Server.sendStatuses(ply)
 	Athena:RefreshStats(ply)
 end)
@@ -129,12 +123,12 @@ Athena.Server.sendStatuses = function(ply)
 end
 
 net.Receive("Athena_RequestReports", function(len, ply)
-	if not Athena.getPlayerInfo(ply) then print("No permissions ... bitch.") return end
+	if not Athena.hasPermission(ply) then print("No permissions ... bitch.") return end
 	Athena.Server.sendReports(ply)
 end)
 
 net.Receive("Athena_TransferStatuses", function(len, ply)
-	if not Athena.getPlayerInfo(ply) then print("Cannot update statuses. Access denied to: " .. ply:Nick()) return end
+	if not Athena.hasPermission(ply) then print("Cannot update statuses. Access denied to: " .. ply:Nick()) return end
 
 	local reportIndex = net.ReadInt(16)
 	local reportStatus = net.ReadInt(16)
@@ -177,7 +171,7 @@ net.Receive("Athena_SendReport", function(len, ply)
 	Athena.Notifications.startNotification(ATHENA_NOTIFICATION_REPORT, {ply:Nick(), reportedPlayer}, ply)
 
 	for k,v in pairs(player.GetAll()) do
-		if Athena.getPlayerInfo(v) then
+		if Athena.hasPermission(v) then
 			Athena.Server.sendReports(v)
 		end
 	end
@@ -195,7 +189,7 @@ hook.Add( "PlayerSay", "ReportMenuCommand", function(ply, text)
 	if ( string.sub(t, 1, 7) == '!report' or string.sub(t, 1, 7) == '/report' ) then
 		local staffOnline = false
 		for k,v in pairs(player.GetAll()) do 
-			if Athena.getPlayerInfo(v) then
+			if Athena.hasPermission(v) then
 				staffOnline = true
 				break
 			end
@@ -203,7 +197,7 @@ hook.Add( "PlayerSay", "ReportMenuCommand", function(ply, text)
 		if staffOnline then
 			ply:ConCommand("athena_report")
 		else
-			ply:SendLua("gui.OpenURL(\"" + Athena.Configuration.ForumsRedirect + "\")")
+			ply:SendLua("gui.OpenURL(\"" .. Athena.Configuration.ForumsRedirect .. "\")")
 		end
 	end
 end)

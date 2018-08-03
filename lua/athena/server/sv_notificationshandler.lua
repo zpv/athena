@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 util.AddNetworkString("Athena_newNotification")
 util.AddNetworkString("Athena_warnNotify")
@@ -45,7 +40,7 @@ Athena.Notifications.startNotification = function(type, data, extra)
 
 	local validPlayers = {}
 	for k,v in pairs(player.GetAll()) do
-		if Athena.getPlayerInfo(v) then
+		if Athena.hasPermission(v) then
 			table.insert(validPlayers, v)
 		end
 	end
@@ -56,7 +51,7 @@ Athena.Notifications.startNotification = function(type, data, extra)
 end
 
 net.Receive("Athena_newNotification", function(len, ply)
-	if not Athena.getPlayerInfo(ply) then print("Cannot make new notification. Access denied to " .. ply:Nick()) return end
+	if not Athena.hasPermission(ply) then print("Cannot make new notification. Access denied to " .. ply:Nick()) return end
 	Athena.Notifications.startNotification()
 
 end)

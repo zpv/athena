@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 function Athena.openReports()
 	
@@ -176,15 +171,9 @@ function Athena.openReports()
 		if ply and IsValid(ply) then
 			local admintools,menuimg = context:AddSubMenu("Admin")
 			menuimg:SetImage("icon16/shield.png")
-			admintools:AddOption("Spectate", function() RunConsoleCommand("ulx", "spectate", ply:Nick()) end)
-			context:AddSpacer()
-			admintools:AddOption("Bring", function() RunConsoleCommand("ulx", "bring", ply:Nick()) end)
-			admintools:AddOption("Goto", function() RunConsoleCommand("ulx", "goto", ply:Nick()) end)
-			admintools:AddOption("Teleport", function() RunConsoleCommand("ulx", "teleport", ply:Nick()) end)
-			admintools:AddOption("Return", function() RunConsoleCommand("ulx", "return", ply:Nick()) end)
-		else
-			context:AddSpacer()
+			Athena.Elements.BuildActions(admintools,ply)
 		end
+		context:AddSpacer()
 
 		if hasReported then
 			local rstatus = context:AddOption(rply and "Reported | Online" or "Reported | Offline")
@@ -198,15 +187,9 @@ function Athena.openReports()
 			if rply and IsValid(rply) then
 				local admintools,menuimg = context:AddSubMenu("Admin")
 				menuimg:SetImage("icon16/shield.png")
-				admintools:AddOption("Spectate", function() RunConsoleCommand("ulx", "spectate", rply:Nick()) end)
-				context:AddSpacer()
-				admintools:AddOption("Bring", function() RunConsoleCommand("ulx", "bring", rply:Nick()) end)
-				admintools:AddOption("Goto", function() RunConsoleCommand("ulx", "goto", rply:Nick()) end)
-				admintools:AddOption("Teleport", function() RunConsoleCommand("ulx", "teleport", rply:Nick()) end)
-				admintools:AddOption("Return", function() RunConsoleCommand("ulx", "return", rply:Nick()) end)
-			else
-				context:AddSpacer()
+				Athena.Elements.BuildActions(admintools,rply)
 			end
+			context:AddSpacer()
 		end 
 	end
 

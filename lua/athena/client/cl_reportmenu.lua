@@ -11,6 +11,8 @@
 
 ]]
 
+local Athena = Athena
+
 Athena.reportMenu = {}
 Athena.Elements.reportMenu= {}
 

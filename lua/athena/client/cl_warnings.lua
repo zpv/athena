@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 function Athena.openWarnings()
 
@@ -79,9 +74,6 @@ function Athena.openWarnings()
 			draw.SimpleText( selectedPlayer and (selectedPlayer:Nick() .. "'s Warnings") or "Player Not Online", "AthenaOswald25Normal", w / 2 - 5, 9, Color(150, 150, 150, 255 *warningAlpha ), TEXT_ALIGN_CENTER )
 			surface.SetDrawColor( Color( 200, 200, 200, 255 * warningAlpha ) )
 			surface.DrawLine( 24, 40, w - 24, 40 )
-			//draw.SimpleText( "Warn Module is largely unfinished. You will need to click twice to fully load and refresh.", "AthenaCourierNew13", w / 2 - 25, 2, Color(150, 150, 150, 255 *warningAlpha ), TEXT_ALIGN_CENTER )
-
-
 		end
 	end
 
@@ -184,56 +176,6 @@ function Athena.openWarnings()
 					Athena.warningAlpha = 0
 					Athena.Elements.warningDetails:SetVisible(true)
 					Athena.Elements.warningDetailsElements.refreshData()
-
-					--[[
-
-					local ply = Athena.findUserByID(v["warningerID"])
-					local hasReported = v["warningedID"] or false
-					local rply = hasReported and Athena.findUserByID(v["warningedID"]) or false
-
-					local context = DermaMenu(self)
-					local status = context:AddOption(ply and "Reporter | Online" or "Reporter | Offline")
-					status:SetTextColor( Color( 170, 170, 170 ) )
-					status.OnMousePressed = function() end
-					
-					context:AddSpacer()
-					context:AddOption("Copy Name: " .. v["warninger"], function() SetClipboardText(v["warninger"]) end):SetImage("icon16/user_edit.png")
-					context:AddOption("Copy SteamID: " .. v["warningerID"], function() SetClipboardText(v["warningerID"]) end):SetImage("icon16/tag_blue.png")
-					context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(v["warningerID"])) end):SetImage("icon16/world.png")
-					context:Open()
-					if ply and IsValid(ply) then
-						local admintools,menuimg = context:AddSubMenu("Admin")
-						menuimg:SetImage("icon16/shield.png")
-						admintools:AddOption("Spectate", function() RunConsoleCommand("ulx", "spectate", ply:Nick()) end)
-						context:AddSpacer()
-						admintools:AddOption("Bring", function() RunConsoleCommand("ulx", "bring", ply:Nick()) end)
-						admintools:AddOption("Goto", function() RunConsoleCommand("ulx", "goto", ply:Nick()) end)
-						admintools:AddOption("Teleport", function() RunConsoleCommand("ulx", "teleport", ply:Nick()) end)
-					else
-						context:AddSpacer()
-					end
-
-					if hasReported then
-						local rstatus = context:AddOption(rply and "Reported | Online" or "Reported | Offline")
-						rstatus:SetTextColor( Color( 170, 170, 170 ) )
-						rstatus.OnMousePressed = function() end
-						context:AddSpacer()
-						context:AddOption("Copy Name: " .. v["warninged"], function() SetClipboardText(v["warninged"]) end):SetImage("icon16/user_edit.png")
-						context:AddOption("Copy SteamID: " .. v["warningedID"], function() SetClipboardText(v["warningedID"]) end):SetImage("icon16/tag_blue.png")
-						context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(v["warningedID"])) end):SetImage("icon16/world.png")
-						context:Open()
-						if rply and IsValid(rply) then
-							local admintools,menuimg = context:AddSubMenu("Admin")
-							menuimg:SetImage("icon16/shield.png")
-							admintools:AddOption("Spectate", function() RunConsoleCommand("ulx", "spectate", rply:Nick()) end)
-							context:AddSpacer()
-							admintools:AddOption("Bring", function() RunConsoleCommand("ulx", "bring", rply:Nick()) end)
-							admintools:AddOption("Goto", function() RunConsoleCommand("ulx", "goto", rply:Nick()) end)
-							admintools:AddOption("Teleport", function() RunConsoleCommand("ulx", "teleport", rply:Nick()) end)
-						else
-							context:AddSpacer()
-						end
-					end ]]
 				end
 
 				ListItem.DoRightClick = function(self)

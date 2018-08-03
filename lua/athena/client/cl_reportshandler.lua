@@ -1,15 +1,10 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 Athena.Client.Reports = Athena.Client.Reports or {}
 Athena.Client.ReportStatuses = Athena.Client.ReportStatuses or {}
@@ -117,13 +112,13 @@ net.Receive("Athena_QueueFinish", function(len)
 	end
 end)
 
-hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.getPlayerInfo(LocalPlayer()) then net.Start("Athena_RequestStatuses") net.SendToServer() end end)
+hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestStatuses") net.SendToServer() end end)
 
 concommand.Add("athena_stats", function()
 	if LocalPlayer():IsAdmin() then
 		print("-=-=-=-=- Athena Statistics -=-=-=-=-\n")
 		for k,v in pairs(player.GetAll()) do
-			if Athena.getPlayerInfo(v) then
+			if Athena.hasPermission(v) then
 				print(v:Nick() .. "'s Completed Reports: " .. v:GetNWInt('Athena_CompletedReports'))
 			end
 		end

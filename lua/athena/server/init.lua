@@ -1,19 +1,15 @@
 --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
 
+AddCSLuaFile("athena/config/sh_config.lua")
+include("athena/config/sh_config.lua")
+
 AddCSLuaFile("athena/client/cl_init.lua")
-AddCSLuaFile("athena/shared/sh_config.lua")
 AddCSLuaFile("athena/shared/sh_utils.lua")
+AddCSLuaFile("athena/shared/sh_permissions.lua")
 AddCSLuaFile("athena/client/cl_menu.lua")
 AddCSLuaFile("athena/client/cl_overview.lua")
 AddCSLuaFile("athena/client/cl_data.lua")
@@ -28,8 +24,8 @@ AddCSLuaFile("athena/client/cl_warnmenu.lua")
 AddCSLuaFile("athena/client/cl_gui_library.lua")
 
 include("athena/server/sv_resources.lua")
-include("athena/shared/sh_config.lua")
 include("athena/shared/sh_utils.lua")
+include("athena/shared/sh_permissions.lua")
 include("athena/server/sv_data.lua")
 include("athena/server/sv_reportshandler.lua")
 include("athena/server/sv_warningshandler.lua")

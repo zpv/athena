@@ -1,15 +1,10 @@
- --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+--[[
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
+
+local Athena = Athena
 
 Athena.warnMenu = {}
 Athena.Elements.warnMenu= {}
@@ -236,7 +231,7 @@ function Athena.buildWarnMenu()
 end
 
 Athena.warnMenu.startMenu = function()
-	if Athena.getPlayerInfo(LocalPlayer()) then
+	if Athena.hasPermission(LocalPlayer()) then
 		if !Athena.warnMenu.menuExists or !IsValid(Athena.Elements.warnMenu.mainFrame) then
 			Athena.buildWarnMenu()
 		end
