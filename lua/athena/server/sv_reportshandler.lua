@@ -1,0 +1,209 @@
+--[[
+
+╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
+║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
+║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
+╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
+────────────────────╚╝──────────╚═╝
+  Designed and Coded by Divine
+        www.AuroraEN.com
+────────────────────────────────
+
+]]
+
+util.AddNetworkString("Athena_TransferReports")
+util.AddNetworkString("Athena_SendReport")
+util.AddNetworkString("Athena_TransferStatuses")
+util.AddNetworkString("Athena_RequestReports")
+util.AddNetworkString("Athena_RequestStatuses")
+util.AddNetworkString("Athena_QueueFinish")
+
+ATHENA_STATUS_WAITING		= 1
+ATHENA_STATUS_INPROGRESS	= 2
+ATHENA_STATUS_COMPLETED		= 3
+
+Athena.Server.Reports = {}
+Athena.Server.SentReports = {}
+Athena.Server.ReportStatuses = {}
+
+--[[
+Athena.Server.writeReport = function(...)
+	local args = {...}
+	local sends = {}
+	for i = 1, #args do
+		local o = args[i]
+		sends[#sends + 1] = o
+	end
+	net.WriteUInt(#sends, 32)
+	for i = 1, #sends do
+		local o = sends[i]
+		local typ = type(o)
+		if typ == "string" or typ == "number" or typ == "boolean" then
+			net.WriteString(tostring(o))
+		end
+	end
+end
+
+Athena.Server.writeStatuses = function(...)
+	local args = {...}
+	local sends = {}
+	for i = 1, #args do
+		local o = args[i]
+		sends[#sends + 1] = o
+	end
+	net.WriteUInt(#sends, 32)
+	for i = 1, #sends do
+		local o = sends[i]
+		net.WriteUInt(o,2)
+	end
+end
+
+Athena.Server.sendReports = function(ply)
+	if not Athena.Server.SentReports[ply:SteamID()] then
+		Athena.Server.SentReports[ply:SteamID()] = {}
+	end
+	local count = 0
+	local sentCount = 0
+	for k,v in pairs(Athena.Server.Reports) do
+		count = count + 1
+		if not Athena.Server.SentReports[ply:SteamID()][k] then
+			sentCount = sentCount + 1
+			net.Start("Athena_TransferReports")
+			print("SENDDD DA REPORT")
+			Athena.Server.writeReport(k, v[1], v[2], v[3], v[4], v[5], v[6])
+			net.Send(ply)
+			Athena.Server.SentReports[ply:SteamID()][k] = true
+			if count == #Athena.Server.Reports then
+				Athena.Server.sendStatuses(ply)
+			end
+		end
+	end
+	if sentCount == 0 then
+		Athena.Server.sendStatuses(ply)
+	end
+end
+
+]]
+
+Athena.Server.sendReports = function(ply)
+	if not Athena.Server.SentReports[ply:SteamID()] then
+		Athena.Server.SentReports[ply:SteamID()] = {}
+	end
+	local count = 0
+	local sentCount = 0
+	for k,v in pairs(Athena.Server.Reports) do
+		count = count + 1
+		if not Athena.Server.SentReports[ply:SteamID()][k] then
+			sentCount = sentCount + 1
+			net.Start("Athena_TransferReports")
+			print("SENDDD DA REPORT")
+
+			net.WriteTable(v)
+			net.WriteUInt(k, 32)
+			net.Send(ply)
+			Athena.Server.SentReports[ply:SteamID()][k] = true
+			if count == #Athena.Server.Reports then
+				net.Start("Athena_QueueFinish")
+				net.Send(ply)
+			end
+		end
+	end
+	if sentCount == 0 then
+		net.Start("Athena_QueueFinish")
+		net.Send(ply)
+	end
+end
+
+net.Receive("Athena_RequestStatuses", function(len, ply)
+	if not Athena.getPlayerInfo(ply) then print("Cannot send statuses. Access denied to: " .. ply:Nick()) return end
+	Athena.Server.sendStatuses(ply)
+	Athena:RefreshStats(ply)
+end)
+
+Athena.Server.sendStatuses = function(ply)
+	net.Start("Athena_TransferStatuses")
+	net.WriteTable(Athena.Server.ReportStatuses)
+	net.Send(ply)
+	net.Start("Athena_QueueFinish")
+	net.Send(ply)
+end
+
+net.Receive("Athena_RequestReports", function(len, ply)
+	if not Athena.getPlayerInfo(ply) then print("No permissions ... bitch.") return end
+	Athena.Server.sendReports(ply)
+end)
+
+net.Receive("Athena_TransferStatuses", function(len, ply)
+	if not Athena.getPlayerInfo(ply) then print("Cannot update statuses. Access denied to: " .. ply:Nick()) return end
+
+	local reportIndex = net.ReadInt(16)
+	local reportStatus = net.ReadInt(16)
+
+	if Athena.Server.ReportStatuses[reportIndex] ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
+		if not Athena.Server.Reports[reportIndex].GivenStat then
+			Athena:SaveStats(ply, Athena:RetrieveStats(ply) + 1)
+			Athena.Server.Reports[reportIndex].GivenStat = true
+		end
+	end
+
+	if Athena.Server.ReportStatuses[reportIndex] then
+		Athena.Server.ReportStatuses[reportIndex] = reportStatus
+	end
+	Athena.Notifications.startNotification(reportStatus, {reportIndex, ply:Nick(), Athena.Server.Reports[reportIndex][1]}, player.GetBySteamID(Athena.Server.Reports[reportIndex][2]) )
+end)
+
+net.Receive("Athena_SendReport", function(len, ply)
+	local report = {}
+	local reportedPlayer,reportedPlayerID
+	local message = net.ReadString()
+	local isReportedPlayer = net.ReadBool()
+
+	table.insert(report,ply:Nick())
+	table.insert(report,ply:SteamID())
+	table.insert(report,os.time())
+	table.insert(report, message)
+	
+	if isReportedPlayer then
+		reportedPlayerID = net.ReadString()
+		reportedPlayer = net.ReadString()
+
+		table.insert(report, reportedPlayerID)
+		table.insert(report, reportedPlayer)
+	end
+
+	table.insert(Athena.Server.Reports, report)
+	table.insert(Athena.Server.ReportStatuses, ATHENA_STATUS_WAITING)
+
+	Athena.Notifications.startNotification(ATHENA_NOTIFICATION_REPORT, {ply:Nick(), reportedPlayer}, ply)
+
+	for k,v in pairs(player.GetAll()) do
+		if Athena.getPlayerInfo(v) then
+			Athena.Server.sendReports(v)
+		end
+	end
+end)
+
+gameevent.Listen( "player_disconnect" )
+hook.Add( "player_disconnect", "FlushPlayerTable", function( data )
+	if Athena.Server.SentReports[data.networkid] then
+		Athena.Server.SentReports[data.networkid] = nil
+	end
+end )
+
+hook.Add( "PlayerSay", "ReportMenuCommand", function(ply, text)
+	local t = string.lower(text)
+	if ( string.sub(t, 1, 7) == '!report' or string.sub(t, 1, 7) == '/report' ) then
+		local staffOnline = false
+		for k,v in pairs(player.GetAll()) do 
+			if Athena.getPlayerInfo(v) then
+				staffOnline = true
+				break
+			end
+		end
+		if staffOnline then
+			ply:ConCommand("athena_report")
+		else
+			ply:SendLua("gui.OpenURL(\"" + Athena.Configuration.ForumsRedirect + "\")")
+		end
+	end
+end)

@@ -1,0 +1,11 @@
+﻿╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
+║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
+║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
+╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
+────────────────────╚╝──────────╚═╝
+  Designed and Coded by Divine
+  	www.AuroraEN.com
+────────────────────────────────
+
+Edit the configuration in /lua/athena/shared/sh_config.lua
+Contact Divine on GmodStore for additional support.
