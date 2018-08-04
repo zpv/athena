@@ -79,17 +79,22 @@ Athena.Server.WarnPlayer = function(target, description, severity, warner)
 		totalSeverity = totalSeverity + tonumber(v["severity"])
 	end
 
-	if totalSeverity >= Athena.Configuration.Warning3DayBanThreshold then
-		if ply:IsValid() then
-			ULib.ban(ply, 4320, "[Athena] Banned for reaching warning threshhold. Exceeding 20 severity", nil)
+	local max = 0
+	local index = -1
+
+	for k,v in pairs(Athena.Configuration.WarningThresholds) do
+		if totalSeverity >= v[1] && v[1] > max then
+			index = k
+			max = v[1]
 		end
-	elseif totalSeverity >= Athena.Configuration.Warning1DayBanThreshold then
-		if ply:IsValid() then
-			ULib.ban(ply, 1440, "[Athena] Banned for reaching warning threshhold. Exceeding 10 severity", nil)
-		end
-	elseif totalSeverity >= Athena.Configuration.WarningKickThreshold then
-		if ply:IsValid() then
-			ULib.kick(ply, "[Athena] Kicked for reaching warning threshhold. Exceeding 5 severity", nil)
+	end
+	
+	if index != -1 then
+		local row = Athena.Configuration.WarningThresholds[index]
+		if row[2] == "kick" then
+			Athena.kick(ply, "[Athena] Kicked for reaching warning threshhold. Exceeding " .. max .. " severity")
+		elseif row[2] == "ban" then
+			Athena.ban(ply, row[3], "[Athena] Banned for reaching warning threshhold. Exceeding " .. max .. " severity")
 		end
 	end
 

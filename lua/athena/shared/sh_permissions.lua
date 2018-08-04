@@ -5,9 +5,14 @@
 ]]
 
 local Athena = Athena
+local recheck = false
 
 function Athena.hasPermission(ply)
     local adminPlugin = Athena.Configuration.AdminPlugin
+
+    if adminPlugin == "auto" or (adminPlugin == "other" && !recheck) then
+        Athena.detectAdminSystem()
+    end
 
     if adminPlugin == "ulx" then
 		return ply:query("athena")
@@ -74,4 +79,3 @@ hook.Add("InitPostEntity", "Athena_RegisterAdminSystem", function()
     Athena.addPermissions()
     Athena.addActions()
 end)
-
