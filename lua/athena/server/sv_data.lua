@@ -24,8 +24,6 @@ end
 hook.Add("Initialize", "Athena_ConnectDatabase", Athena.ConnectDatabase)
 
 function Athena.InitDatabase()
-	print("ATHENA - INIT DATABASE")
-
 	local reportsTableQuery = Athena.mysql:Create("athena_reports")
 		reportsTableQuery:Create("id", "INTEGER NOT NULL AUTO_INCREMENT")
 		reportsTableQuery:Create("reporterid","BIGINT NOT NULL")
@@ -73,7 +71,20 @@ end
 
 hook.Add("Athena_DatabaseConnected", "Athena_InitDatabase", Athena.InitDatabase)
 
-function Athena.SaveReport(report)
+function Athena.SaveNewReport(report)
+	local insertObj = serverguard.mysql:Insert("athena_reports");
+			insertObj:Insert("reporterid", player:Nick());
+			insertObj:Insert("reportername", "user");
+			insertObj:Insert("reportedid", player:SteamID());
+			insertObj:Insert("reportedname", os.time());
+			insertObj:Insert("time", os.time());
+			insertObj:Insert("message", os.time());
+			insertObj:Insert("status", os.time());
+
+		insertObj:Execute();
+end
+
+function Athena.UpdateReport(id, field, value)
 	
 end
 
