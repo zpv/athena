@@ -6,6 +6,7 @@
 
 AddCSLuaFile("athena/config/sh_config.lua")
 include("athena/config/sh_config.lua")
+include("athena/server/libraries/sv_mysql.lua")
 include("athena/config/sv_sql_config.lua")
 
 AddCSLuaFile("athena/client/cl_init.lua")
