@@ -112,7 +112,7 @@ function Athena.openReports()
 		surface.DrawLine( 0, 40, w, 40 )
 		if selectedReport then
 			draw.SimpleText("Time of Report: " .. os.date("%c", selectedReport.timeOfReport), "DebugFixed", w-235, 1, Color(150,150,150, 255*reportAlpha))
-			local statusText = Athena.Client.ReportStatuses[tonumber(selectedReport.UID)] == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.ReportStatuses[tonumber(selectedReport.UID)] == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.ReportStatuses[tonumber(selectedReport.UID)] == ATHENA_STATUS_COMPLETED and "Complete" or "nil"
+			local statusText = Athena.Client.Reports[tonumber(selectedReport.id)].status == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.Reports[tonumber(selectedReport.id)].status == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.Reports[tonumber(selectedReport.id)].status == ATHENA_STATUS_COMPLETED and "Complete" or "nil"
 			draw.SimpleText("Report Status: " .. statusText, "DebugFixed", w-235, 15, Color(150,150,150, 255*reportAlpha))
 			draw.SimpleText("Reporter: " .. selectedReport.reporter .. " ["..selectedReport.reporterID.."]", "DebugFixed", 5, 1, Color(150,150,150, 255*reportAlpha))
 			draw.SimpleText("Reported: " .. (selectedReport.reported and selectedReport.reported .. " [" ..selectedReport.reportedID.."]" or "N/A"), "DebugFixed", 5, 15, Color(150,150,150, 255*reportAlpha))
@@ -208,7 +208,7 @@ function Athena.openReports()
 
 	Athena.Elements.reportDetailsElements.markOngoing.DoClick = function()
 		Athena.Tick()
-		Athena.Client.updateStatus(selectedReport.UID, ATHENA_STATUS_INPROGRESS)
+		Athena.Client.updateStatus(selectedReport.id, ATHENA_STATUS_INPROGRESS)
 	end
 
 	Athena.Elements.reportDetailsElements.markComplete = vgui.Create("DButton", Athena.Elements.reportDetailsElements)
@@ -225,7 +225,7 @@ function Athena.openReports()
 
 	Athena.Elements.reportDetailsElements.markComplete.DoClick = function()
 		Athena.Tick()
-		Athena.Client.updateStatus(selectedReport.UID, ATHENA_STATUS_COMPLETED)
+		Athena.Client.updateStatus(selectedReport.id, ATHENA_STATUS_COMPLETED)
 	end
 
 	Athena.Elements.reportDetailsElements.copyTranscript = vgui.Create("DButton", Athena.Elements.reportDetailsElements)
@@ -268,32 +268,32 @@ function Athena.openReports()
 		Athena.Elements.reportList.reportsCopy = table.Copy(Athena.Client.Reports)
 		table.sort(Athena.Elements.reportList.reportsCopy, function(a, b) return a["timeOfReport"] < b["timeOfReport"] end)
 		for k,v in pairs(Athena.Elements.reportList.reportsCopy) do 
-			if not (Athena.HideCompleted and Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_COMPLETED) then
+			if not (Athena.HideCompleted and Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_COMPLETED) then
 				local ListItem = Athena.Elements.reportList:Add( "DButton" )
 				local timeOfReport = os.date("%I:%M %p",v["timeOfReport"])
 				ListItem:SetSize( 140, 40 )
 				ListItem:SetText("")
 				ListItem.drawAvatar = function(self)
-					Athena.Elements.Avatars[v["UID"]] = vgui.Create("AvatarImage", self)
-					Athena.Elements.Avatars[v["UID"]]:SetSize(32, 32)
-					Athena.Elements.Avatars[v["UID"]]:SetPos(4, 4)
-					if Athena.isSteamID(v["reporterID"]) then Athena.Elements.Avatars[v["UID"]]:SetSteamID(Athena.SteamIdToCommunityId(v["reporterID"]), 32) return end
-					Athena.Elements.Avatars[v["UID"]]:SetSteamID(v["reporterID"], 32)
+					Athena.Elements.Avatars[v.id] = vgui.Create("AvatarImage", self)
+					Athena.Elements.Avatars[v.id]:SetSize(32, 32)
+					Athena.Elements.Avatars[v.id]:SetPos(4, 4)
+					if Athena.isSteamID(v["reporterID"]) then Athena.Elements.Avatars[v.id]:SetSteamID(Athena.SteamIdToCommunityId(v["reporterID"]), 32) return end
+					Athena.Elements.Avatars[v.id]:SetSteamID(v["reporterID"], 32)
 				end
 				ListItem.Paint = function(self, w, h)
-					draw.RoundedBox( 2, 0, 1, w, h, Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_INPROGRESS and Color( 200, 200, 200, 150*pageAlpha ) or Color( 200, 200, 200, 255*pageAlpha ) )
-					draw.RoundedBoxEx( 2, 0, 0, w - 1, h - 1, Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_INPROGRESS and Color( 244, 244, 244, 150*pageAlpha ) or Color( 244, 244, 244, 255*pageAlpha ), false, false, true, true )
-					if not IsValid(Athena.Elements.Avatars[v["UID"]]) then
+					draw.RoundedBox( 2, 0, 1, w, h, Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS and Color( 200, 200, 200, 150*pageAlpha ) or Color( 200, 200, 200, 255*pageAlpha ) )
+					draw.RoundedBoxEx( 2, 0, 0, w - 1, h - 1, Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS and Color( 244, 244, 244, 150*pageAlpha ) or Color( 244, 244, 244, 255*pageAlpha ), false, false, true, true )
+					if not IsValid(Athena.Elements.Avatars[v.id]) then
 						self:drawAvatar()
 					end
-					Athena.Elements.Avatars[v["UID"]]:SetAlpha(255 * pageAlpha)
+					Athena.Elements.Avatars[v.id]:SetAlpha(255 * pageAlpha)
 					draw.SimpleText( v["reporter"], "AthenaOswald20Normal", 40, 1, Color( 144, 144, 144, 255* pageAlpha ) )
 					draw.SimpleText( timeOfReport, "AthenaOswald20Light", 40, 18, Color( 144, 144, 144, 255* pageAlpha ) )
-					draw.SimpleText( Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_COMPLETED and "Complete", "AthenaCourierNew11", 135, 25, Color( 144, 144, 144, 255* pageAlpha ),TEXT_ALIGN_RIGHT)
-					if Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_INPROGRESS then
+					draw.SimpleText( Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_COMPLETED and "Complete", "AthenaCourierNew11", 135, 25, Color( 144, 144, 144, 255* pageAlpha ),TEXT_ALIGN_RIGHT)
+					if Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS then
 
 						draw.RoundedBoxEx( 2, 0, 0, w, h, Color( 244, 244, 244, 100*pageAlpha ), false, false, true, true )
-					elseif Athena.Client.ReportStatuses[tonumber(v["UID"])] == ATHENA_STATUS_COMPLETED then
+					elseif Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_COMPLETED then
 						draw.RoundedBoxEx( 2, 0, 0, w, h, Color( 155, 244, 155, 100*pageAlpha ), false, false, true, true )
 					end
 
@@ -361,9 +361,9 @@ function Athena.openReports()
 					local context = DermaMenu(self)
 					
 					context:AddSpacer()
-					context:AddOption("Mark as Complete", function() Athena.Client.updateStatus(v["UID"], ATHENA_STATUS_COMPLETED) end):SetImage("icon16/tick.png")
-					context:AddOption("Mark as Ongoing", function() Athena.Client.updateStatus(v["UID"], ATHENA_STATUS_INPROGRESS) end):SetImage("icon16/time_go.png")
-					context:AddOption("Mark as Waiting", function() Athena.Client.updateStatus(v["UID"], ATHENA_STATUS_WAITING) end):SetImage("icon16/time.png")
+					context:AddOption("Mark as Complete", function() Athena.Client.updateStatus(v.id, ATHENA_STATUS_COMPLETED) end):SetImage("icon16/tick.png")
+					context:AddOption("Mark as Ongoing", function() Athena.Client.updateStatus(v.id, ATHENA_STATUS_INPROGRESS) end):SetImage("icon16/time_go.png")
+					context:AddOption("Mark as Waiting", function() Athena.Client.updateStatus(v.id, ATHENA_STATUS_WAITING) end):SetImage("icon16/time.png")
 					context:Open()
 				end
 			end

@@ -41,18 +41,18 @@ Athena.Client.requestReports = function()
 	net.SendToServer()
 end
 
-Athena.Client.updateStatus = function(reportIndex, reportStatus)
-	if Athena.Client.ReportStatuses[tonumber(reportIndex)] ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
-		if not Athena.Client.Reports[reportIndex].GivenStat then
+Athena.Client.updateStatus = function(reportId, reportStatus)
+	if Athena.Client.Reports[reportId].status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
+		if not Athena.Client.Reports[reportId].GivenStat then
 			Athena.Client.CompletedReports = Athena.Client.CompletedReports + 1
-			Athena.Client.Reports[reportIndex].GivenStat = true
+			Athena.Client.Reports[reportId].GivenStat = true
 		end
 	end
 
-	Athena.Client.ReportStatuses[tonumber(reportIndex)] = reportStatus
+	Athena.Client.Reports[reportId].status = reportStatus
 
 	net.Start("Athena_TransferStatuses")
-	net.WriteInt(reportIndex, 16)
+	net.WriteInt(reportId, 16)
 	net.WriteInt(reportStatus, 16)
 	net.SendToServer()
 end
@@ -71,23 +71,9 @@ Athena.Client.sendReport = function(reportedPlayer, reportedPlayerID, message)
 end
 
 net.Receive("Athena_TransferReports", function(len)
+	local report = net.ReadTable()
 
-	local renamedTable = net.ReadTable()
---	renamedTable["UID"] = net.ReadUInt(32)
-	renamedTable["UID"] = net.ReadUInt(32)
-
-	if receivedTable[5] then
-		renamedTable["reportedID"] = receivedTable[5]
-	end
-	if receivedTable[6] then
-		renamedTable["reported"] = receivedTable[6]
-	end
-
-	table.insert(Athena.Client.Reports, renamedTable)
-	if not Athena.Client.ReportStatuses[renamedTable["UID"]] then
-		Athena.Client.ReportStatuses[renamedTable["UID"]] = ATHENA_STATUS_WAITING
-	end
-
+	Athena.Client.Reports[report.id] = report
 end)
 
 net.Receive("Athena_TransferStatuses", function(len)

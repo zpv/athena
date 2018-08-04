@@ -18,7 +18,7 @@ ATHENA_STATUS_INPROGRESS	= 2
 ATHENA_STATUS_COMPLETED		= 3
 ATHENA_STATUS_REJECTED		= 4
 
-Athena.Server.LastId = Athena.Server.LastId or 1
+Athena.Server.LastId = Athena.Server.LastId or -1
 
 Athena.Server.Reports = {}
 Athena.Server.SentReports = {}
@@ -91,14 +91,14 @@ Athena.Server.sendReports = function(ply)
 	local sentCount = 0
 	for k,v in pairs(Athena.Server.Reports) do
 		count = count + 1
-		if not Athena.Server.SentReports[ply:SteamID()][k] then
+		if not Athena.Server.SentReports[ply:SteamID()][v.id] then
 			sentCount = sentCount + 1
 			net.Start("Athena_TransferReports")
 
 			net.WriteTable(v)
-			net.WriteUInt(k, 32)
+
 			net.Send(ply)
-			Athena.Server.SentReports[ply:SteamID()][k] = true
+			Athena.Server.SentReports[ply:SteamID()][v.id] = true
 			if count == #Athena.Server.Reports then
 				net.Start("Athena_QueueFinish")
 				net.Send(ply)
@@ -133,27 +133,34 @@ end)
 net.Receive("Athena_TransferStatuses", function(len, ply)
 	if not Athena.hasPermission(ply) then print("Cannot update statuses. Access denied to: " .. ply:Nick()) return end
 
-	local reportIndex = net.ReadInt(16)
+	local reportId = net.ReadInt(16)
 	local reportStatus = net.ReadInt(16)
 
-	if Athena.Server.ReportStatuses[reportIndex] ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
-		if not Athena.Server.Reports[reportIndex].GivenStat then
+	if Athena.Server.Reports[reportId].status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
+		if not Athena.Server.Reports[reportId].GivenStat then
 			Athena:SaveStats(ply, Athena:RetrieveStats(ply) + 1)
-			Athena.Server.Reports[reportIndex].GivenStat = true
+			Athena.Server.Reports[reportId].GivenStat = true
 		end
 	end
 
-	if Athena.Server.ReportStatuses[reportIndex] then
-		Athena.Server.ReportStatuses[reportIndex] = reportStatus
-	end
-	Athena.Notifications.startNotification(reportStatus, {reportIndex, ply:Nick(), Athena.Server.Reports[reportIndex][1]}, player.GetBySteamID(Athena.Server.Reports[reportIndex][2]) )
+	Athena.Server.Reports[reportId] = reportStatus
+	
+	Athena.Notifications.startNotification(reportStatus, {reportId, ply:Nick(), Athena.Server.Reports[reportId].reporterName}, player.GetBySteamID(Athena.Server.Reports[reportId].reporterId) )
 end)
 
 net.Receive("Athena_SendReport", function(len, ply)
+	if Athena.Server.LastId == -1 then
+		ErrorNoHalt("Failed to create report - database not initalized.")
+		return
+	end
+
 	local report = {}
 	local reportedPlayer,reportedPlayerId
 	local message = net.ReadString()
 	local isReportedPlayer = net.ReadBool()
+
+	report.id = Athena.Server.LastId + 1
+	Athena.Server.LastId = Athena.Server.LastId + 1
 
 	report.reporterName = ply:Nick()
 	report.reporterId = ply:SteamID()
@@ -168,8 +175,10 @@ net.Receive("Athena_SendReport", function(len, ply)
 		report.reportedId = reportedPlayerId
 	end
 
+	report.status = ATHENA_STATUS_WAITING
+
 	table.insert(Athena.Server.Reports, report)
-	table.insert(Athena.Server.ReportStatuses, ATHENA_STATUS_WAITING)
+	--table.insert(Athena.Server.ReportStatuses, ATHENA_STATUS_WAITING)
 
 	Athena.Notifications.startNotification(ATHENA_NOTIFICATION_REPORT, {ply:Nick(), reportedPlayer}, ply)
 
