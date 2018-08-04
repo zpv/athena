@@ -56,6 +56,7 @@ function Athena.InitDatabase()
 
 	Athena.mysql:RawQuery("SELECT ".. lastInsert .."() as id", function(result)
 		if result then
+			PrintTable(result)
 			Athena.Server.LastId = result.id
 		end
 	end)
@@ -85,7 +86,7 @@ function Athena.SaveNewReport(report)
 end
 
 function Athena.UpdateReport(id, field, value)
-	
+
 end
 
 function Athena:RetrieveStats(ply)
