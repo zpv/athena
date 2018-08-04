@@ -13,7 +13,7 @@ Athena.Client.CompletedReports = 0
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2
 ATHENA_STATUS_COMPLETED		= 3
-
+ATHENA_STATUS_REJECTED		= 4
 --[[
 
 Athena.Client.readReport = function()
@@ -72,14 +72,10 @@ end
 
 net.Receive("Athena_TransferReports", function(len)
 
-	local renamedTable = {}
+	local renamedTable = net.ReadTable()
 --	renamedTable["UID"] = net.ReadUInt(32)
-	local receivedTable = net.ReadTable()
 	renamedTable["UID"] = net.ReadUInt(32)
-	renamedTable["reporter"] = receivedTable[1]
-	renamedTable["reporterID"] = receivedTable[2]
-	renamedTable["timeOfReport"] = receivedTable[3]
-	renamedTable["message"] = receivedTable[4]
+
 	if receivedTable[5] then
 		renamedTable["reportedID"] = receivedTable[5]
 	end

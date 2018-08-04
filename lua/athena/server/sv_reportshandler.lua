@@ -16,6 +16,9 @@ util.AddNetworkString("Athena_QueueFinish")
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2
 ATHENA_STATUS_COMPLETED		= 3
+ATHENA_STATUS_REJECTED		= 4
+
+Athena.Server.LastId = Athena.Server.LastId or 1
 
 Athena.Server.Reports = {}
 Athena.Server.SentReports = {}
@@ -148,21 +151,21 @@ end)
 
 net.Receive("Athena_SendReport", function(len, ply)
 	local report = {}
-	local reportedPlayer,reportedPlayerID
+	local reportedPlayer,reportedPlayerId
 	local message = net.ReadString()
 	local isReportedPlayer = net.ReadBool()
 
-	table.insert(report,ply:Nick())
-	table.insert(report,ply:SteamID())
-	table.insert(report,os.time())
-	table.insert(report, message)
+	report.reporterName = ply:Nick()
+	report.reporterId = ply:SteamID()
+	report.time = os.time()
+	report.message = message
 	
 	if isReportedPlayer then
-		reportedPlayerID = net.ReadString()
+		reportedPlayerId = net.ReadString()
 		reportedPlayer = net.ReadString()
 
-		table.insert(report, reportedPlayerID)
-		table.insert(report, reportedPlayer)
+		report.reportedName = reportedPlayer
+		report.reportedId = reportedPlayerId
 	end
 
 	table.insert(Athena.Server.Reports, report)
