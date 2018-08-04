@@ -369,8 +369,8 @@ end;
 
 -- A function to connect to the MySQL database.
 function Athena.mysql:Connect(host, username, password, database, port, socket, flags, module)
-	Module = module
-	
+	Module = module or Module
+
 	if (!port) then
 		port = 3306;
 	end;

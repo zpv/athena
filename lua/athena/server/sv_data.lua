@@ -42,12 +42,12 @@ function Athena.InitDatabase()
 	reportsTableQuery:Execute()
 
 	local warningsTableQuery = Athena.mysql:Create("athena_warnings")
-		warningsTablesQuery:Create("id", "BIGINT NOT NULL PRIMARY KEY")
-		warningsTablesQuery:Create("name", "VARCHAR(45)")
-		warningsTablesQuery:Create("adminid", "BIGINT NOT NULL")
-		warningsTablesQuery:Create("adminname", "VARCHAR(45)")
-		warningsTablesQuery:Create("severity", "INTEGER NOT NULL")
-		warningsTablesQuery:Create("description", "TEXT NOT NULL")
+		warningsTableQuery:Create("id", "BIGINT NOT NULL PRIMARY KEY")
+		warningsTableQuery:Create("name", "VARCHAR(45)")
+		warningsTableQuery:Create("adminid", "BIGINT NOT NULL")
+		warningsTableQuery:Create("adminname", "VARCHAR(45)")
+		warningsTableQuery:Create("severity", "INTEGER NOT NULL")
+		warningsTableQuery:Create("description", "TEXT NOT NULL")
 	warningsTableQuery:Execute()
 
 	local lastInsert = "last_insert_rowid"
