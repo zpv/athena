@@ -11,64 +11,67 @@ for _, dir in ipairs( { "athena/", "athena/stats/", "athena/warnings/" } ) do
 end
 
 function Athena.ConnectDatabase()
-	if (file.Exists("addons/serverguard/mysql.cfg", "MOD")) then
-		local config = util.KeyValuesToTable(
-			file.Read("addons/serverguard/mysql.cfg", "MOD")
-		);
+	local config = Athena.Configuration.MySQL
 
-		if (config and config.enabled == 1) then
-			if (config.module != Module) then
-				Module = config.module;
-			end;
+	if (config.Enabled) then
+		Athena.mysql:Connect(config.Host, config.Username, config.Password, config.Database, config.Port, config.Socket, nil, config.Module)
+		return
+	end
 
-			serverguard.mysql:Connect(config.host, config.username, config.password, config.database, config.port, config.unixsocket);
-			return;
-		end;
-	end;
-
-	serverguard.mysql:Connect();
+	Athena.mysql:Connect();
 end
 
 hook.Add("Initialize", "Athena_ConnectDatabase", Athena.ConnectDatabase)
 
 function Athena.InitDatabase()
 	print("ATHENA - INIT DATABASE")
-	local AUTOINCREMENT = MySQLite.isMySQL() and "AUTO_INCREMENT" or "AUTOINCREMENT"
 
-	MySQLite.query([[
-		CREATE TABLE IF NOT EXISTS athena_reports(
-			id INTEGER NOT NULL PRIMARY KEY ]] .. AUTOINCREMENT .. [[,
-			reporterid BIGINT NOT NULL,
-			reportername VARCHAR(45),
-			reportedid BIGINT,
-			reportedname VARCHAR(45),
-			time TIMESTAMP,
-			message TEXT,
-			status INTEGER,
-			adminid BIGINT,
-			rating INTEGER
-		);
-	]])
-	MySQLite.query([[
-			CREATE TABLE IF NOT EXISTS athena_warnings(
-				id BIGINT NOT NULL PRIMARY KEY,
-				name VARCHAR(45),
-				warnerid BIGINT NOT NULL,
-				warnername VARCHAR(45),
-				severity INTEGER NOT NULL,
-				description TEXT NOT NULL
-			);
-		]])
-	MySQLite.query([[
-		SELECT last_insert_rowid() as id
-		]], function(tbl)
-			if tbl then
-				Athena.Server.LastId = tbl.id
-			end
-		end)
+	local reportsTableQuery = Athena.mysql:Create("athena_reports")
+		reportsTableQuery:Create("id", "INTEGER NOT NULL AUTO_INCREMENT")
+		reportsTableQuery:Create("reporterid","BIGINT NOT NULL")
+		reportsTableQuery:Create("reportername","VARCHAR(45)")
+		reportsTableQuery:Create("reportedid","BIGINT")
+		reportsTableQuery:Create("reportedname","VARCHAR(45)")
+		reportsTableQuery:Create("time","TIMESTAMP")
+		reportsTableQuery:Create("message","TEXT")
+		reportsTableQuery:Create("status","INTEGER")
+		reportsTableQuery:Create("adminname","VARCHAR(45)")
+		reportsTableQuery:Create("adminid","BIGINT")
+		reportsTableQuery:Create("rating", "INTEGER")
+		reportsTableQuery:PrimaryKey("id");
+	reportsTableQuery:Execute()
+
+	local warningsTableQuery = Athena.mysql:Create("athena_warnings")
+		warningsTablesQuery:Create("id", "BIGINT NOT NULL PRIMARY KEY")
+		warningsTablesQuery:Create("name", "VARCHAR(45)")
+		warningsTablesQuery:Create("adminid", "BIGINT NOT NULL")
+		warningsTablesQuery:Create("adminname", "VARCHAR(45)")
+		warningsTablesQuery:Create("severity", "INTEGER NOT NULL")
+		warningsTablesQuery:Create("description", "TEXT NOT NULL")
+	warningsTableQuery:Execute()
+
+	local lastInsert = "last_insert_rowid"
+
+	if Athena.Configuration.MySQL.Enabled then
+		lastInsert = "last_insert_id"
+	end
+
+	Athena.mysql:RawQuery("SELECT ".. lastInsert .."() as id", function(result)
+		if result then
+			Athena.Server.LastId = tbl.id
+		end
+	end)
+
+	-- MySQLite.query([[
+	-- 	SELECT last_insert_rowid() as id
+	-- 	]], function(tbl)
+	-- 		if tbl then
+	-- 			Athena.Server.LastId = tbl.id
+	-- 		end
+	-- 	end)
 end
 
-
+hook.Add("Athena_DatabaseConnected", "Athena_InitDatabase", Athena.InitDatabase)
 
 function Athena.SaveReport(report)
 	
