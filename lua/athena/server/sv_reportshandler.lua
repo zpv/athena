@@ -12,6 +12,7 @@ util.AddNetworkString("Athena_TransferStatuses")
 util.AddNetworkString("Athena_RequestReports")
 util.AddNetworkString("Athena_RequestStatuses")
 util.AddNetworkString("Athena_QueueFinish")
+util.AddNetworkString("Athena_RequestRating")
 
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2
@@ -111,6 +112,18 @@ Athena.Server.sendReports = function(ply)
 	end
 end
 
+net.Receive("Athena_RequestRating", function(len, ply)
+	local reportId = net.ReadInt(16)
+	local rating = net.ReadInt(16)
+
+	local report = Athena.Server.Reports[reportId]
+
+	if report == nil or report.reporterId != ply:SteamID() then return end
+	report.rating = math.Clamp(rating, 0, 5)
+	
+	Athena.UpdateReport(report)
+end)
+
 net.Receive("Athena_RequestStatuses", function(len, ply)
 	if not Athena.hasPermission(ply) then print("Cannot send statuses. Access denied to: " .. ply:Nick()) return end
 	Athena.Server.sendStatuses(ply)
@@ -136,16 +149,22 @@ net.Receive("Athena_TransferStatuses", function(len, ply)
 	local reportId = net.ReadInt(16)
 	local reportStatus = net.ReadInt(16)
 
-	if Athena.Server.Reports[reportId].status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
-		if not Athena.Server.Reports[reportId].GivenStat then
+	local report = Athena.Server.Reports[reportId]
+
+	if report.status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
+		if not report.GivenStat then
 			Athena:SaveStats(ply, Athena:RetrieveStats(ply) + 1)
-			Athena.Server.Reports[reportId].GivenStat = true
+			report.GivenStat = true
 		end
 	end
 
-	Athena.Server.Reports[reportId].status = reportStatus
+	report.adminName = ply:Nick()
+	report.adminId = ply:SteamID()
+	report.status = reportStatus
+
+	Athena.UpdateReport(report)
 	
-	Athena.Notifications.startNotification(reportStatus, {reportId, ply:Nick(), Athena.Server.Reports[reportId].reporterName}, player.GetBySteamID(Athena.Server.Reports[reportId].reporterId) )
+	Athena.Notifications.startNotification(reportStatus, {reportId, ply:Nick(), report.reporterName}, player.GetBySteamID(report.reporterId) )
 end)
 
 net.Receive("Athena_SendReport", function(len, ply)

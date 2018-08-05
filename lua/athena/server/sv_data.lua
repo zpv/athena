@@ -73,20 +73,25 @@ end
 hook.Add("Athena_DatabaseConnected", "Athena_InitDatabase", Athena.InitDatabase)
 
 function Athena.SaveNewReport(report)
-	local insertObj = serverguard.mysql:Insert("athena_reports");
-			insertObj:Insert("reporterid", report.reporterId);
-			insertObj:Insert("reportername", report.reporterName);
-			insertObj:Insert("reportedid", report.reportedId);
-			insertObj:Insert("reportedname", report.reportedName);
-			insertObj:Insert("time", os.time());
-			insertObj:Insert("message", report.message);
-			insertObj:Insert("status", report.status);
-
-		insertObj:Execute();
+	local insertObj = Athena.mysql:Insert("athena_reports")
+			insertObj:Insert("reporterid", report.reporterId)
+			insertObj:Insert("reportername", report.reporterName)
+			insertObj:Insert("reportedid", report.reportedId)
+			insertObj:Insert("reportedname", report.reportedName)
+			insertObj:Insert("time", os.time())
+			insertObj:Insert("message", report.message)
+			insertObj:Insert("status", report.status)
+		insertObj:Execute()
 end
 
-function Athena.UpdateReport(id, field, value)
-
+function Athena.UpdateReport(report)
+	local updateObj = Athena.mysql:Update("athena_reports")
+		updateObj:Update("adminname", report.adminName)
+		updateObj:Update("adminid", report.adminId)
+		updateObj:Update("status", report.status)
+		updateObj:Update("rating", report.rating)
+		updateObj:Where("id", report.id)
+	updateObj:Execute()
 end
 
 function Athena:RetrieveStats(ply)

@@ -24,6 +24,7 @@ AddCSLuaFile("athena/client/cl_notificationshandler.lua")
 AddCSLuaFile("athena/client/cl_reportmenu.lua")
 AddCSLuaFile("athena/client/cl_warnmenu.lua")
 AddCSLuaFile("athena/client/cl_gui_library.lua")
+AddCSLuaFile("athena/client/cl_ratemenu.lua")
 
 include("athena/server/sv_resources.lua")
 include("athena/shared/sh_utils.lua")

@@ -17,6 +17,7 @@ include("cl_reports.lua")
 include("cl_reportmenu.lua")
 include("cl_warnings.lua")
 include("cl_warnmenu.lua")
+include("cl_ratemenu.lua")
 
 ATHENA_PAGE_OVERVIEW 	= 1;
 ATHENA_PAGE_REPORTS		= 2;
