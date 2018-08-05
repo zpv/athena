@@ -118,7 +118,7 @@ function Athena:SaveWarnings(ply, warnings)
 	local data = util.TableToJSON(warnings or {})
 
 	file.Write(path, data)
-end
+end 
 
 function Athena:RefreshStats(ply)
 	ply:SetNWInt('Athena_CompletedReports', Athena:RetrieveStats(ply))
