@@ -20,8 +20,8 @@ ATHENA_STATUS_REJECTED		= 4
 
 Athena.Server.LastId = Athena.Server.LastId or -1
 
-Athena.Server.Reports = {}
-Athena.Server.SentReports = {}
+Athena.Server.Reports = Athena.Server.Reports or {}
+Athena.Server.SentReports = Athena.Server.SentReports or {}
 Athena.Server.ReportStatuses = {}
 
 --[[
@@ -143,7 +143,7 @@ net.Receive("Athena_TransferStatuses", function(len, ply)
 		end
 	end
 
-	Athena.Server.Reports[reportId] = reportStatus
+	Athena.Server.Reports[reportId].status = reportStatus
 	
 	Athena.Notifications.startNotification(reportStatus, {reportId, ply:Nick(), Athena.Server.Reports[reportId].reporterName}, player.GetBySteamID(Athena.Server.Reports[reportId].reporterId) )
 end)
@@ -177,7 +177,8 @@ net.Receive("Athena_SendReport", function(len, ply)
 
 	report.status = ATHENA_STATUS_WAITING
 
-	table.insert(Athena.Server.Reports, report)
+	Athena.Server.Reports[report.id] = report
+	Athena.SaveNewReport(report)
 	--table.insert(Athena.Server.ReportStatuses, ATHENA_STATUS_WAITING)
 
 	Athena.Notifications.startNotification(ATHENA_NOTIFICATION_REPORT, {ply:Nick(), reportedPlayer}, ply)

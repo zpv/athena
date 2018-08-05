@@ -1,7 +1,7 @@
 --[[
-░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
-▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
-▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
+â–‘â–ˆâ–€â–€â–ˆ â–€â–€â–ˆâ–€â–€ â–ˆâ–‘â–‘â–ˆ â–ˆâ–€â–€ â–ˆâ–€â–€â–„ â–ˆâ–€â–€â–ˆ 
+â–’â–ˆâ–„â–„â–ˆ â–‘â–‘â–ˆâ–‘â–‘ â–ˆâ–€â–€â–ˆ â–ˆâ–€â–€ â–ˆâ–‘â–‘â–ˆ â–ˆâ–„â–„â–ˆ 
+â–’â–ˆâ–‘â–’â–ˆ â–‘â–‘â–€â–‘â–‘ â–€â–‘â–‘â–€ â–€â–€â–€ â–€â–‘â–‘â–€ â–€â–‘â–‘â–€ 
 ]]
 
 local Athena = Athena
@@ -97,7 +97,7 @@ function Athena.openReports()
 	Athena.Elements.reportDetails.Paint = function(self, w, h)
 		if selectedReportID then
 			selectedReport = Athena.Client.Reports[selectedReportID]
-			draw.SimpleText( selectedReport and (selectedReport.reporter .. "'s Report [ID #" .. selectedReportID .."]") or "Select A Report", "AthenaOswald25Normal", w / 2 - 5, 9, Color(150, 150, 150, 255 *reportAlpha ), TEXT_ALIGN_CENTER )
+			draw.SimpleText( selectedReport and (selectedReport.reporterName .. "'s Report [ID #" .. selectedReportID .."]") or "Select A Report", "AthenaOswald25Normal", w / 2 - 5, 9, Color(150, 150, 150, 255 *reportAlpha ), TEXT_ALIGN_CENTER )
 			surface.SetDrawColor( Color( 200, 200, 200, 255 * reportAlpha ) )
 			surface.DrawLine( 24, 40, w - 24, 40 )
 
@@ -114,8 +114,8 @@ function Athena.openReports()
 			draw.SimpleText("Time of Report: " .. os.date("%c", selectedReport.timeOfReport), "DebugFixed", w-235, 1, Color(150,150,150, 255*reportAlpha))
 			local statusText = Athena.Client.Reports[tonumber(selectedReport.id)].status == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.Reports[tonumber(selectedReport.id)].status == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.Reports[tonumber(selectedReport.id)].status == ATHENA_STATUS_COMPLETED and "Complete" or "nil"
 			draw.SimpleText("Report Status: " .. statusText, "DebugFixed", w-235, 15, Color(150,150,150, 255*reportAlpha))
-			draw.SimpleText("Reporter: " .. selectedReport.reporter .. " ["..selectedReport.reporterID.."]", "DebugFixed", 5, 1, Color(150,150,150, 255*reportAlpha))
-			draw.SimpleText("Reported: " .. (selectedReport.reported and selectedReport.reported .. " [" ..selectedReport.reportedID.."]" or "N/A"), "DebugFixed", 5, 15, Color(150,150,150, 255*reportAlpha))
+			draw.SimpleText("Reporter: " .. selectedReport.reporterName .. " ["..selectedReport.reporterId.."]", "DebugFixed", 5, 1, Color(150,150,150, 255*reportAlpha))
+			draw.SimpleText("Reported: " .. (selectedReport.reportedName and selectedReport.reportedName .. " [" ..selectedReport.reportedId.."]" or "N/A"), "DebugFixed", 5, 15, Color(150,150,150, 255*reportAlpha))
 
 			draw.SimpleText("Report Transcript: ", "DebugFixed", 5, 45, Color(150,150,150, 255*reportAlpha))
 			--Athena.Elements.reportDetailsElements.reportMessage:SetText(selectedReport.message)
@@ -154,9 +154,9 @@ function Athena.openReports()
 	end
 	Athena.Elements.reportDetailsElements.managementActions.DoClick = function(self)
 		Athena.Tick()
-		local ply = Athena.findUserByID(selectedReport["reporterID"])
-		local hasReported = selectedReport["reportedID"] or false
-		local rply = (hasReported and Athena.findUserByID(selectedReport["reportedID"])) or false
+		local ply = Athena.findUserByID(selectedReport.reporterId)
+		local hasReported = selectedReport.reportedId or false
+		local rply = (hasReported and Athena.findUserByID(selectedReport.reportedId)) or false
 
 		local context = DermaMenu(self)
 		local status = context:AddOption(ply and "Reporter | Online" or "Reporter | Offline")
@@ -164,9 +164,9 @@ function Athena.openReports()
 		status.OnMousePressed = function() end
 		
 		context:AddSpacer()
-		context:AddOption("Copy Name: " .. selectedReport["reporter"], function() SetClipboardText(selectedReport["reporter"]) end):SetImage("icon16/user_edit.png")
-		context:AddOption("Copy SteamID: " .. selectedReport["reporterID"], function() SetClipboardText(selectedReport["reporterID"]) end):SetImage("icon16/tag_blue.png")
-		context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(selectedReport["reporterID"])) end):SetImage("icon16/world.png")
+		context:AddOption("Copy Name: " .. selectedReport.reporterName, function() SetClipboardText(selectedReport.reporterName) end):SetImage("icon16/user_edit.png")
+		context:AddOption("Copy SteamID: " .. selectedReport.reporterId, function() SetClipboardText(selectedReport.reporterId) end):SetImage("icon16/tag_blue.png")
+		context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(selectedReport.reporterId)) end):SetImage("icon16/world.png")
 		context:Open()
 		if ply and IsValid(ply) then
 			local admintools,menuimg = context:AddSubMenu("Admin")
@@ -180,9 +180,9 @@ function Athena.openReports()
 			rstatus:SetTextColor( Color( 170, 170, 170 ) )
 			rstatus.OnMousePressed = function() end
 			context:AddSpacer()
-			context:AddOption("Copy Name: " .. selectedReport["reported"], function() SetClipboardText(selectedReport["reported"]) end):SetImage("icon16/user_edit.png")
-			context:AddOption("Copy SteamID: " .. selectedReport["reportedID"], function() SetClipboardText(selectedReport["reportedID"]) end):SetImage("icon16/tag_blue.png")
-			context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(selectedReport["reportedID"])) end):SetImage("icon16/world.png")
+			context:AddOption("Copy Name: " .. selectedReport.reportedName, function() SetClipboardText(selectedReport.reportedName) end):SetImage("icon16/user_edit.png")
+			context:AddOption("Copy SteamID: " .. selectedReport.reportedId, function() SetClipboardText(selectedReport.reportedId) end):SetImage("icon16/tag_blue.png")
+			context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(selectedReport.reportedId)) end):SetImage("icon16/world.png")
 			context:Open()
 			if rply and IsValid(rply) then
 				local admintools,menuimg = context:AddSubMenu("Admin")
@@ -266,34 +266,34 @@ function Athena.openReports()
 		Athena.Elements.reportList:SetSpaceY( 5 )
 		Athena.HideCompleted = true
 		Athena.Elements.reportList.reportsCopy = table.Copy(Athena.Client.Reports)
-		table.sort(Athena.Elements.reportList.reportsCopy, function(a, b) return a["timeOfReport"] < b["timeOfReport"] end)
+		table.sort(Athena.Elements.reportList.reportsCopy, function(a, b) return a.time < b.time end)
 		for k,v in pairs(Athena.Elements.reportList.reportsCopy) do 
-			if not (Athena.HideCompleted and Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_COMPLETED) then
+			if not (Athena.HideCompleted and Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_COMPLETED) then
 				local ListItem = Athena.Elements.reportList:Add( "DButton" )
-				local timeOfReport = os.date("%I:%M %p",v["timeOfReport"])
+				local timeOfReport = os.date("%I:%M %p",v.time)
 				ListItem:SetSize( 140, 40 )
 				ListItem:SetText("")
 				ListItem.drawAvatar = function(self)
 					Athena.Elements.Avatars[v.id] = vgui.Create("AvatarImage", self)
 					Athena.Elements.Avatars[v.id]:SetSize(32, 32)
 					Athena.Elements.Avatars[v.id]:SetPos(4, 4)
-					if Athena.isSteamID(v["reporterID"]) then Athena.Elements.Avatars[v.id]:SetSteamID(Athena.SteamIdToCommunityId(v["reporterID"]), 32) return end
-					Athena.Elements.Avatars[v.id]:SetSteamID(v["reporterID"], 32)
+					if Athena.isSteamID(v.reporterId) then Athena.Elements.Avatars[v.id]:SetSteamID(Athena.SteamIdToCommunityId(v.reporterId), 32) return end
+					Athena.Elements.Avatars[v.id]:SetSteamID(v.reporterId, 32)
 				end
 				ListItem.Paint = function(self, w, h)
-					draw.RoundedBox( 2, 0, 1, w, h, Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS and Color( 200, 200, 200, 150*pageAlpha ) or Color( 200, 200, 200, 255*pageAlpha ) )
-					draw.RoundedBoxEx( 2, 0, 0, w - 1, h - 1, Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS and Color( 244, 244, 244, 150*pageAlpha ) or Color( 244, 244, 244, 255*pageAlpha ), false, false, true, true )
+					draw.RoundedBox( 2, 0, 1, w, h, Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_INPROGRESS and Color( 200, 200, 200, 150*pageAlpha ) or Color( 200, 200, 200, 255*pageAlpha ) )
+					draw.RoundedBoxEx( 2, 0, 0, w - 1, h - 1, Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_INPROGRESS and Color( 244, 244, 244, 150*pageAlpha ) or Color( 244, 244, 244, 255*pageAlpha ), false, false, true, true )
 					if not IsValid(Athena.Elements.Avatars[v.id]) then
 						self:drawAvatar()
 					end
 					Athena.Elements.Avatars[v.id]:SetAlpha(255 * pageAlpha)
-					draw.SimpleText( v["reporter"], "AthenaOswald20Normal", 40, 1, Color( 144, 144, 144, 255* pageAlpha ) )
+					draw.SimpleText( v.reporterName, "AthenaOswald20Normal", 40, 1, Color( 144, 144, 144, 255* pageAlpha ) )
 					draw.SimpleText( timeOfReport, "AthenaOswald20Light", 40, 18, Color( 144, 144, 144, 255* pageAlpha ) )
-					draw.SimpleText( Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_COMPLETED and "Complete", "AthenaCourierNew11", 135, 25, Color( 144, 144, 144, 255* pageAlpha ),TEXT_ALIGN_RIGHT)
-					if Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_INPROGRESS then
+					draw.SimpleText( Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_INPROGRESS and "Ongoing" or Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_WAITING and "Waiting" or Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_COMPLETED and "Complete", "AthenaCourierNew11", 135, 25, Color( 144, 144, 144, 255* pageAlpha ),TEXT_ALIGN_RIGHT)
+					if Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_INPROGRESS then
 
 						draw.RoundedBoxEx( 2, 0, 0, w, h, Color( 244, 244, 244, 100*pageAlpha ), false, false, true, true )
-					elseif Athena.Client.ReportStatuses[tonumber(v.id)] == ATHENA_STATUS_COMPLETED then
+					elseif Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_COMPLETED then
 						draw.RoundedBoxEx( 2, 0, 0, w, h, Color( 155, 244, 155, 100*pageAlpha ), false, false, true, true )
 					end
 
@@ -308,9 +308,9 @@ function Athena.openReports()
 
 					--[[
 
-					local ply = Athena.findUserByID(v["reporterID"])
-					local hasReported = v["reportedID"] or false
-					local rply = hasReported and Athena.findUserByID(v["reportedID"]) or false
+					local ply = Athena.findUserByID(v.reporterId)
+					local hasReported = v.reportedId or false
+					local rply = hasReported and Athena.findUserByID(v.reportedId) or false
 
 					local context = DermaMenu(self)
 					local status = context:AddOption(ply and "Reporter | Online" or "Reporter | Offline")
@@ -318,9 +318,9 @@ function Athena.openReports()
 					status.OnMousePressed = function() end
 					
 					context:AddSpacer()
-					context:AddOption("Copy Name: " .. v["reporter"], function() SetClipboardText(v["reporter"]) end):SetImage("icon16/user_edit.png")
-					context:AddOption("Copy SteamID: " .. v["reporterID"], function() SetClipboardText(v["reporterID"]) end):SetImage("icon16/tag_blue.png")
-					context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(v["reporterID"])) end):SetImage("icon16/world.png")
+					context:AddOption("Copy Name: " .. v.reporterName, function() SetClipboardText(v.reporterName) end):SetImage("icon16/user_edit.png")
+					context:AddOption("Copy SteamID: " .. v.reporterId, function() SetClipboardText(v.reporterId) end):SetImage("icon16/tag_blue.png")
+					context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(v.reporterId)) end):SetImage("icon16/world.png")
 					context:Open()
 					if ply and IsValid(ply) then
 						local admintools,menuimg = context:AddSubMenu("Admin")
@@ -339,9 +339,9 @@ function Athena.openReports()
 						rstatus:SetTextColor( Color( 170, 170, 170 ) )
 						rstatus.OnMousePressed = function() end
 						context:AddSpacer()
-						context:AddOption("Copy Name: " .. v["reported"], function() SetClipboardText(v["reported"]) end):SetImage("icon16/user_edit.png")
-						context:AddOption("Copy SteamID: " .. v["reportedID"], function() SetClipboardText(v["reportedID"]) end):SetImage("icon16/tag_blue.png")
-						context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(v["reportedID"])) end):SetImage("icon16/world.png")
+						context:AddOption("Copy Name: " .. v.reportedName, function() SetClipboardText(v.reportedName) end):SetImage("icon16/user_edit.png")
+						context:AddOption("Copy SteamID: " .. v.reportedId, function() SetClipboardText(v.reportedId) end):SetImage("icon16/tag_blue.png")
+						context:AddOption("Steam Community Profile", function() gui.OpenURL("http://steamcommunity.com/profiles/" .. Athena.SteamIdToCommunityId(v.reportedId)) end):SetImage("icon16/world.png")
 						context:Open()
 						if rply and IsValid(rply) then
 							local admintools,menuimg = context:AddSubMenu("Admin")
