@@ -13,6 +13,7 @@ util.AddNetworkString("Athena_RequestReports")
 util.AddNetworkString("Athena_RequestStatuses")
 util.AddNetworkString("Athena_QueueFinish")
 util.AddNetworkString("Athena_RequestRating")
+util.AddNetworkString("Athena_SendRating")
 
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2
@@ -124,6 +125,14 @@ net.Receive("Athena_RequestRating", function(len, ply)
 	Athena.UpdateReport(report)
 end)
 
+Athena.Server.requestRating = function(ply, reportId)
+	if Athena.Server.Reports[reportId] and Athena.Server.Reports[reportId].reporterId == ply:SteamID() then
+		net.Start("Athena_RequestRating")
+		net.WriteInt(reportId, 16)
+		net.Send(ply)
+	end
+end
+
 net.Receive("Athena_RequestStatuses", function(len, ply)
 	if not Athena.hasPermission(ply) then print("Cannot send statuses. Access denied to: " .. ply:Nick()) return end
 	Athena.Server.sendStatuses(ply)
@@ -150,6 +159,7 @@ net.Receive("Athena_TransferStatuses", function(len, ply)
 	local reportStatus = net.ReadInt(16)
 
 	local report = Athena.Server.Reports[reportId]
+	local reporter = player.GetBySteamID(report.reporterId)
 
 	if report.status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
 		if not report.GivenStat then
@@ -163,8 +173,14 @@ net.Receive("Athena_TransferStatuses", function(len, ply)
 	report.status = reportStatus
 
 	Athena.UpdateReport(report)
+
+	if (reportStatus == ATHENA_STATUS_COMPLETED and (not report.rating or report.rating == 0)) then 
+		Athena.Server.requestRating(reporter, report.id)
+	end
 	
-	Athena.Notifications.startNotification(reportStatus, {reportId, ply:Nick(), report.reporterName}, player.GetBySteamID(report.reporterId) )
+	if reporter then
+		Athena.Notifications.startNotification(reportStatus, {reportId, ply:Nick(), report.reporterName}, reporter)
+	end
 end)
 
 net.Receive("Athena_SendReport", function(len, ply)

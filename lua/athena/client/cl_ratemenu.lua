@@ -1,14 +1,7 @@
- --[[
-
-╔══╦╗╔╗─────────╔═╗───────╔╗─╔══╗─╔═╦╗
-║╔╗║╚╣╚╦═╦═╦╦═╗─║╬╠═╦═╦═╦╦╣╚╗║══╬╦╣═╣╚╦═╦══╗
-║╠╣║╔╣║║╩╣║║║╬╚╗║╗╣╩╣╬║╬║╔╣╔╣╠══║║╠═║╔╣╩╣║║║
-╚╝╚╩═╩╩╩═╩╩═╩══╝╚╩╩═╣╔╩═╩╝╚═╝╚══╬╗╠═╩═╩═╩╩╩╝
-────────────────────╚╝──────────╚═╝
-  Designed and Coded by Divine
-        www.AuroraEN.com
-────────────────────────────────
-
+--[[
+░█▀▀█ ▀▀█▀▀ █░░█ █▀▀ █▀▀▄ █▀▀█ 
+▒█▄▄█ ░░█░░ █▀▀█ █▀▀ █░░█ █▄▄█ 
+▒█░▒█ ░░▀░░ ▀░░▀ ▀▀▀ ▀░░▀ ▀░░▀ 
 ]]
 
 local Athena = Athena
@@ -32,11 +25,14 @@ local function drawPanelBlur( panel, layers, density, alpha )
     end
 end
 
-function Athena.buildRateMenu()
+function Athena.buildRateMenu(reportId)
 		local createdTime = CurTime()
 		--alpha = math.Clamp((CurTime()-createdTime/Athena.Configuration.FadeTime),0,1)
 		local alpha = 0
 		local initRemoveTime = 0
+
+		local rating = 0
+
 		Athena.rateMenu.initToggle = false
 		local pulseOffset = 5*(math.sin((10)*(CurTime())))
 		Athena.rateMenu.menuExists = true
@@ -250,9 +246,18 @@ function Athena.buildRateMenu()
 		Athena.Elements.rateMenu.rateStar1:SetSize(16,16)
 		Athena.Elements.rateMenu.rateStar1:SetText("")
 		Athena.Elements.rateMenu.rateStar1.Paint = function(self, w, h)
-			surface.SetDrawColor(255,255,255,255)
+			if rating >= 1 then
+				surface.SetDrawColor(255,255,255,255)
+			else
+				surface.SetDrawColor(255,255,255,150)
+			end
 			surface.SetMaterial(starIcon)
 			surface.DrawTexturedRect(0, 0, w, h)
+		end
+
+		Athena.Elements.rateMenu.rateStar1.DoClick = function(self)
+			Athena.Tick()
+			rating = 1
 		end
 
 		Athena.Elements.rateMenu.rateStar2 = vgui.Create("DButton", Athena.Elements.rateMenu.mainPanel)
@@ -260,19 +265,84 @@ function Athena.buildRateMenu()
 		Athena.Elements.rateMenu.rateStar2:SetSize(16,16)
 		Athena.Elements.rateMenu.rateStar2:SetText("")
 		Athena.Elements.rateMenu.rateStar2.Paint = function(self, w, h)
-			surface.SetDrawColor(255,255,255,150)
+			if rating >= 2 then
+				surface.SetDrawColor(255,255,255,255)
+			else
+				surface.SetDrawColor(255,255,255,150)
+			end
 			surface.SetMaterial(starIcon)
 			surface.DrawTexturedRect(0, 0, w, h)
+		end
+
+		Athena.Elements.rateMenu.rateStar2.DoClick = function(self)
+			Athena.Tick()
+			rating = 2
+		end
+
+		Athena.Elements.rateMenu.rateStar3 = vgui.Create("DButton", Athena.Elements.rateMenu.mainPanel)
+		Athena.Elements.rateMenu.rateStar3:SetPos(245,10)
+		Athena.Elements.rateMenu.rateStar3:SetSize(16,16)
+		Athena.Elements.rateMenu.rateStar3:SetText("")
+		Athena.Elements.rateMenu.rateStar3.Paint = function(self, w, h)
+			if rating >= 3 then
+				surface.SetDrawColor(255,255,255,255)
+			else
+				surface.SetDrawColor(255,255,255,150)
+			end
+
+			surface.SetMaterial(starIcon)
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+
+		Athena.Elements.rateMenu.rateStar3.DoClick = function(self)
+			Athena.Tick()
+			rating = 3
+		end
+
+		Athena.Elements.rateMenu.rateStar4 = vgui.Create("DButton", Athena.Elements.rateMenu.mainPanel)
+		Athena.Elements.rateMenu.rateStar4:SetPos(260,10)
+		Athena.Elements.rateMenu.rateStar4:SetSize(16,16)
+		Athena.Elements.rateMenu.rateStar4:SetText("")
+		Athena.Elements.rateMenu.rateStar4.Paint = function(self, w, h)
+			if rating >= 4 then
+				surface.SetDrawColor(255,255,255,255)
+			else
+				surface.SetDrawColor(255,255,255,150)
+			end
+			surface.SetMaterial(starIcon)
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+
+		Athena.Elements.rateMenu.rateStar4.DoClick = function(self)
+			Athena.Tick()
+			rating = 4
+		end
+
+		Athena.Elements.rateMenu.rateStar5 = vgui.Create("DButton", Athena.Elements.rateMenu.mainPanel)
+		Athena.Elements.rateMenu.rateStar5:SetPos(265,10)
+		Athena.Elements.rateMenu.rateStar5:SetSize(16,16)
+		Athena.Elements.rateMenu.rateStar5:SetText("")
+		Athena.Elements.rateMenu.rateStar5.Paint = function(self, w, h)
+			if rating >= 5 then
+				surface.SetDrawColor(255,255,255,255)
+			else
+				surface.SetDrawColor(255,255,255,150)
+			end
+			surface.SetMaterial(starIcon)
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+
+		Athena.Elements.rateMenu.rateStar5.DoClick = function(self)
+			Athena.Tick()
+			rating = 5
 		end
 
 		--Athena.Elements.Combobox{ x=150, y=7, w=150, parent=Athena.Elements.rateMenu.mainPanel, enableinput=true, selectall=true, choices={"Divinity","BanLorenzo"} }
 
 end
 
-Athena.rateMenu.startMenu = function()
+Athena.rateMenu.startMenu = function(rating)
 	if !Athena.rateMenu.menuExists or !IsValid(Athena.Elements.rateMenu.mainFrame) then
-		Athena.buildRateMenu()
+		Athena.buildRateMenu(rating)
 	end
 end
-
-concommand.Add("athena_rate", Athena.rateMenu.startMenu)

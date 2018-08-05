@@ -70,6 +70,23 @@ Athena.Client.sendReport = function(reportedPlayer, reportedPlayerID, message)
 	net.SendToServer()
 end
 
+Athena.Client.sendRating = function(reportId, rating)
+	net.Start("Athena_RequestRating")
+
+	net.WriteInt(reportId, 16)
+	net.WriteInt(rating, 16)
+
+	net.SendToServer()
+end
+
+net.Receive("Athena_RequestRating", function(len)
+	local reportId = net.ReadInt(16)
+
+	if Athena.Client.Reports[reportId] then
+		Athena.rateMenu.startMenu(reportId)
+	end
+end)
+
 net.Receive("Athena_TransferReports", function(len)
 	local report = net.ReadTable()
 
