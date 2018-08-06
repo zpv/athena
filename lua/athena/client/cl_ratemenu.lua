@@ -319,7 +319,7 @@ function Athena.buildRateMenu(reportId)
 		end
 
 		Athena.Elements.rateMenu.rateStar5 = vgui.Create("DButton", Athena.Elements.rateMenu.mainPanel)
-		Athena.Elements.rateMenu.rateStar5:SetPos(280,10)
+		Athena.Elements.rateMenu.rateStar5:SetPos(275,10)
 		Athena.Elements.rateMenu.rateStar5:SetSize(16,16)
 		Athena.Elements.rateMenu.rateStar5:SetText("")
 		Athena.Elements.rateMenu.rateStar5.Paint = function(self, w, h)

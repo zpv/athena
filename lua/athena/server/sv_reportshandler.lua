@@ -123,6 +123,12 @@ net.Receive("Athena_RequestRating", function(len, ply)
 	report.rating = math.Clamp(rating, 0, 5)
 	
 	Athena.UpdateReport(report)
+
+	local admin = player.GetBySteamID(report.adminId)
+
+	if admin then
+		Athena.Notifications.startNotification(ATHENA_NOTIFICATION_RATED, {report.reporterName, report.rating}, admin)
+	end
 end)
 
 Athena.Server.requestRating = function(ply, reportId)

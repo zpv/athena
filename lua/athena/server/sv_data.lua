@@ -100,6 +100,13 @@ function Athena:RetrieveStats(ply)
 	return tonumber(data) or 0
 end
 
+function Athena:RetrieveAverageRating(ply)
+	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+	local data = file.Read(path, "DATA")
+
+	return tonumber(data) or 0
+end
+
 function Athena:SaveStats(ply, count)
 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
 	local data = count
@@ -126,4 +133,5 @@ end
 
 function Athena:RefreshStats(ply)
 	ply:SetNWInt('Athena_CompletedReports', Athena:RetrieveStats(ply))
+	ply:SetNWInt('Athena_AverageRating', Athena:RetrieveAverageRating(ply))
 end
