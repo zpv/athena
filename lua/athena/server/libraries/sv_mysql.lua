@@ -54,35 +54,35 @@ function QUERY_CLASS:Where(key, value)
 end;
 
 function QUERY_CLASS:WhereEqual(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` = \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` = "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereNotEqual(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` != \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` != "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereLike(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` LIKE \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` LIKE "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereNotLike(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` NOT LIKE \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` NOT LIKE "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereGT(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` > \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` > "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereLT(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` < \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` < "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereGTE(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` >= \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` >= "..self:Escape(value);
 end;
 
 function QUERY_CLASS:WhereLTE(key, value)
-	self.whereList[#self.whereList + 1] = "`"..key.."` <= \""..self:Escape(value).."\"";
+	self.whereList[#self.whereList + 1] = "`"..key.."` <= "..self:Escape(value);
 end;
 
 function QUERY_CLASS:OrderByDesc(key)
@@ -102,11 +102,11 @@ function QUERY_CLASS:Select(fieldName)
 end;
 
 function QUERY_CLASS:Insert(key, value)
-	self.insertList[#self.insertList + 1] = {"`"..key.."`", "\""..self:Escape(value).."\""};
+	self.insertList[#self.insertList + 1] = {"`"..key.."`", ""..self:Escape(value)};
 end;
 
 function QUERY_CLASS:Update(key, value)
-	self.updateList[#self.updateList + 1] = {"`"..key.."`", "\""..self:Escape(value).."\""};
+	self.updateList[#self.updateList + 1] = {"`"..key.."`", ""..self:Escape(value)};
 end;
 
 function QUERY_CLASS:Create(key, value)
@@ -495,26 +495,17 @@ function Athena.mysql:Queue(queryString, callback)
 end;
 
 -- A function to escape a string for MySQL.
-function Athena.mysql:Escape(text, bNoQuotes)
+function Athena.mysql:Escape(text)
 	if (self.connection) then
 		if (Module == "tmysql4") then
-			if (bNoQuotes) then
-				return self.connection:Escape(text);
-			else
-				return string.format("\"%s\"", self.connection:Escape(text));
-			end;
+			return self.connection:Escape(text);
 		elseif (Module == "mysqloo") then
-			if (bNoQuotes) then
-				return self.connection:escape(text);
-			else
-				return string.format("\"%s\"", self.connection:escape(text));
-			end;
+			return self.connection:escape(text);
 		end;
 	else
-		return sql.SQLStr(text, bNoQuotes);
+		return sql.SQLStr(string.gsub(text, "\"", "'"), true);
 	end;
 end;
-	
 
 -- A function to disconnect from the MySQL database.
 function Athena.mysql:Disconnect()
