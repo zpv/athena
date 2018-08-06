@@ -143,11 +143,10 @@ function Athena:RetrieveWarnings(ply, callback)
 		queryObj:Where("id", tonumber(id))
 		queryObj:Callback(function(result, status, lastID)
 			local warnings = {}
-			PrintTable(result)
 			if (type(result) == "table" and #result > 0) then
 				
 				if (result[1].data != "NULL" and result[1].data != nil) then
-					warnings = Athena.von.deserialize(result[1].data)
+					warnings = util.JSONToTable(result[1].data)
 				end
 			else
 				Athena:SaveWarnings(id, warnings, true)
@@ -159,7 +158,7 @@ end
 
 function Athena:SaveWarnings(id, warnings, bNew)
 	--local path = "athena/warnings/" .. tostring(ply) .. ".txt"
-	local data = Athena.von.serialize(warnings or {})
+	local data = util.TableToJSON(warnings or {})
 
 	if (bNew) then
 		local insertObj = Athena.mysql:Insert("athena_warnings");

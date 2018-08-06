@@ -7,12 +7,10 @@
 AddCSLuaFile("athena/config/sh_config.lua")
 include("athena/config/sh_config.lua")
 include("athena/server/libraries/sv_mysql.lua")
-include("athena/shared/libraries/sh_von.lua")
 include("athena/config/sv_sql_config.lua")
 
 AddCSLuaFile("athena/client/cl_init.lua")
 AddCSLuaFile("athena/shared/sh_utils.lua")
-AddCSLuaFile("athena/shared/libraries/sh_von.lua")
 AddCSLuaFile("athena/shared/sh_permissions.lua")
 AddCSLuaFile("athena/client/cl_menu.lua")
 AddCSLuaFile("athena/client/cl_overview.lua")
