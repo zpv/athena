@@ -26,27 +26,27 @@ hook.Add("Initialize", "Athena_ConnectDatabase", Athena.ConnectDatabase)
 function Athena.InitDatabase()
 	local reportsTableQuery = Athena.mysql:Create("athena_reports")
 		reportsTableQuery:Create("id", "INTEGER NOT NULL AUTO_INCREMENT")
-		reportsTableQuery:Create("reporterid","BIGINT NOT NULL")
+		reportsTableQuery:Create("reporterid","VARCHAR(17) NOT NULL")
 		reportsTableQuery:Create("reportername","VARCHAR(45)")
-		reportsTableQuery:Create("reportedid","BIGINT")
+		reportsTableQuery:Create("reportedid","VARCHAR(17)")
 		reportsTableQuery:Create("reportedname","VARCHAR(45)")
 		reportsTableQuery:Create("time","TIMESTAMP")
 		reportsTableQuery:Create("message","TEXT")
 		reportsTableQuery:Create("status","INTEGER")
 		reportsTableQuery:Create("adminname","VARCHAR(45)")
-		reportsTableQuery:Create("adminid","BIGINT")
+		reportsTableQuery:Create("adminid","VARCHAR(17)")
 		reportsTableQuery:Create("rating", "INTEGER")
 		reportsTableQuery:PrimaryKey("id");
 	reportsTableQuery:Execute()
 
 	local warningsTableQuery = Athena.mysql:Create("athena_warnings")
-		warningsTableQuery:Create("id", "BIGINT NOT NULL")
+		warningsTableQuery:Create("id", "VARCHAR(17) NOT NULL")
 		warningsTableQuery:Create("data", "TEXT")
 
 	warningsTableQuery:Execute()
 
 	local statsTableQuery = Athena.mysql:Create("athena_stats")
-		statsTableQuery:Create("id", "BIGINT NOT NULL")
+		statsTableQuery:Create("id", "VARCHAR(17) NOT NULL")
 		statsTableQuery:Create("name", "VARCHAR(45)")
 		statsTableQuery:Create("completed", "INTEGER")
 		statsTableQuery:Create("rated", "INTEGER")
@@ -81,10 +81,10 @@ hook.Add("Athena_DatabaseConnected", "Athena_InitDatabase", Athena.InitDatabase)
 function Athena.SaveNewReport(report)
 	local reporterId64, reportedId64
 
-	reporterId64 = tonumber(util.SteamIDTo64(report.reporterId))
+	reporterId64 = util.SteamIDTo64(report.reporterId)
 
 	if reportedId then
-		reportedId64 = tonumber(util.SteamIDTo64(report.reportedId))
+		reportedId64 = util.SteamIDTo64(report.reportedId)
 	end
 
 	local insertObj = Athena.mysql:Insert("athena_reports")
@@ -99,7 +99,7 @@ function Athena.SaveNewReport(report)
 end
 
 function Athena.UpdateReport(report)
-	local adminId64 = tonumber(util.SteamIDTo64(report.adminId))
+	local adminId64 = util.SteamIDTo64(report.adminId)
 	local updateObj = Athena.mysql:Update("athena_reports")
 		updateObj:Update("adminname", report.adminName)
 		updateObj:Update("adminid", adminId64)
@@ -140,7 +140,7 @@ function Athena:RetrieveWarnings(ply, callback)
 	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
 
 	local queryObj = Athena.mysql:Select("athena_warnings")
-		queryObj:Where("id", tonumber(id))
+		queryObj:Where("id", id)
 		queryObj:Callback(function(result, status, lastID)
 			local warnings = {}
 			if (type(result) == "table" and #result > 0) then
@@ -163,12 +163,12 @@ function Athena:SaveWarnings(id, warnings, bNew)
 	if (bNew) then
 		local insertObj = Athena.mysql:Insert("athena_warnings");
 			insertObj:Insert("data", data);
-			insertObj:Insert("id", tonumber(id));
+			insertObj:Insert("id", id);
 		insertObj:Execute();
 	else
 		local updateObj = Athena.mysql:Update("athena_warnings");
 			updateObj:Update("data", data);
-			updateObj:Where("id", tonumber(id));
+			updateObj:Where("id", id);
 		updateObj:Execute();
 	end;
 end 
