@@ -8,7 +8,7 @@ local Athena = Athena
 
 Athena.Client.Reports = Athena.Client.Reports or {}
 Athena.Client.ReportStatuses = Athena.Client.ReportStatuses or {}
-Athena.Client.CompletedReports = 0
+Athena.Client.CompletedReports = Athena.Client.CompletedReports or 0
 
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2

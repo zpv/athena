@@ -144,7 +144,7 @@ function Athena:RetrieveWarnings(ply, callback)
 		queryObj:Callback(function(result, status, lastID)
 			local warnings = {}
 			if (type(result) == "table" and #result > 0) then
-				
+
 				if (result[1].data != "NULL" and result[1].data != nil) then
 					warnings = util.JSONToTable(result[1].data)
 				end

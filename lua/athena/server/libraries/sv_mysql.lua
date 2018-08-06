@@ -495,17 +495,26 @@ function Athena.mysql:Queue(queryString, callback)
 end;
 
 -- A function to escape a string for MySQL.
-function Athena.mysql:Escape(text)
+function Athena.mysql:Escape(text, bNoQuotes)
 	if (self.connection) then
 		if (Module == "tmysql4") then
-			return self.connection:Escape(text);
+			if (bNoQuotes) then
+				return self.connection:Escape(text);
+			else
+				return string.format("\"%s\"", self.connection:Escape(text));
+			end;
 		elseif (Module == "mysqloo") then
-			return self.connection:escape(text);
+			if (bNoQuotes) then
+				return self.connection:escape(text);
+			else
+				return string.format("\"%s\"", self.connection:escape(text));
+			end;
 		end;
 	else
-		return sql.SQLStr(string.gsub(text, "\"", "'"), true);
+		return sql.SQLStr(text, bNoQuotes);
 	end;
 end;
+	
 
 -- A function to disconnect from the MySQL database.
 function Athena.mysql:Disconnect()
