@@ -143,7 +143,9 @@ function Athena:RetrieveWarnings(ply, callback)
 		queryObj:Where("id", tonumber(id))
 		queryObj:Callback(function(result, status, lastID)
 			local warnings = {}
+			PrintTable(result)
 			if (type(result) == "table" and #result > 0) then
+				
 				if (result[1].data != "NULL") then
 					warnings = Athena.von.deserialize(result[1].data) or {}
 				end
