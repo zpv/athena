@@ -46,7 +46,7 @@ function Athena.InitDatabase()
 	warningsTableQuery:Execute()
 
 	local statsTableQuery = Athena.mysql:Create("athena_stats")
-		statsTableQuery:Create("id", "BIGINT NOT NULL PRIMARY KEY")
+		statsTableQuery:Create("id", "BIGINT NOT NULL")
 		statsTableQuery:Create("name", "VARCHAR(45)")
 		statsTableQuery:Create("completed", "INTEGER")
 		statsTableQuery:Create("rated", "INTEGER")
