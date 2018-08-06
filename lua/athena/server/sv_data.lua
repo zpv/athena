@@ -146,8 +146,8 @@ function Athena:RetrieveWarnings(ply, callback)
 			PrintTable(result)
 			if (type(result) == "table" and #result > 0) then
 				
-				if (result[1].data != "NULL") then
-					warnings = Athena.von.deserialize(result[1].data) or {}
+				if (result[1].data != "NULL" and result[1].data != nil) then
+					warnings = Athena.von.deserialize(result[1].data)
 				end
 			else
 				Athena:SaveWarnings(id, warnings, true)
