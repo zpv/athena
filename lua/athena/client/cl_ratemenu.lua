@@ -234,8 +234,8 @@ function Athena.buildRateMenu(reportId)
 			Athena.Tick()
 			self:GetParent():GetParent():SetKeyboardInputEnabled(false)
 			self:GetParent():GetParent():SetMouseInputEnabled(false)
-			local reportedPlayer, reportedPlayerID = Athena.Elements.rateMenu.playerDropdown:GetSelected()
-			Athena.Client.sendRating(reportedPlayer,reportedPlayerID, Athena.Elements.rateMenu.messageEntry:GetValue())
+
+			Athena.Client.sendRating(reportId,rating)
 			Athena.Elements.rateMenu.mainFrame.StartToggle(self:GetParent())
 		end
 
@@ -319,7 +319,7 @@ function Athena.buildRateMenu(reportId)
 		end
 
 		Athena.Elements.rateMenu.rateStar5 = vgui.Create("DButton", Athena.Elements.rateMenu.mainPanel)
-		Athena.Elements.rateMenu.rateStar5:SetPos(265,10)
+		Athena.Elements.rateMenu.rateStar5:SetPos(280,10)
 		Athena.Elements.rateMenu.rateStar5:SetSize(16,16)
 		Athena.Elements.rateMenu.rateStar5:SetText("")
 		Athena.Elements.rateMenu.rateStar5.Paint = function(self, w, h)

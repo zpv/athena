@@ -54,10 +54,9 @@ function Athena.InitDatabase()
 		lastInsert = "last_insert_id"
 	end
 
-	Athena.mysql:RawQuery("SELECT ".. lastInsert .."() as id", function(result)
+	Athena.mysql:RawQuery("SELECT count(id) FROM athena_reports", function(result)
 		if result then
-			PrintTable(result)
-			Athena.Server.LastId = result[1].id
+			Athena.Server.LastId = result[1]["count(id)"]
 		end
 	end)
 
