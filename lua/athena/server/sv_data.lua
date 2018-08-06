@@ -40,13 +40,20 @@ function Athena.InitDatabase()
 	reportsTableQuery:Execute()
 
 	local warningsTableQuery = Athena.mysql:Create("athena_warnings")
-		warningsTableQuery:Create("id", "BIGINT NOT NULL PRIMARY KEY")
-		warningsTableQuery:Create("name", "VARCHAR(45)")
-		warningsTableQuery:Create("adminid", "BIGINT NOT NULL")
-		warningsTableQuery:Create("adminname", "VARCHAR(45)")
-		warningsTableQuery:Create("severity", "INTEGER NOT NULL")
-		warningsTableQuery:Create("description", "TEXT NOT NULL")
+		warningsTableQuery:Create("id", "BIGINT NOT NULL")
+		warningsTableQuery:Create("data", "TEXT")
+
 	warningsTableQuery:Execute()
+
+	local statsTableQuery = Athena.mysql:Create("athena_stats")
+		statsTableQuery:Create("id", "BIGINT NOT NULL PRIMARY KEY")
+		statsTableQuery:Create("name", "VARCHAR(45)")
+		statsTableQuery:Create("completed", "INTEGER")
+		statsTableQuery:Create("rated", "INTEGER")
+		statsTableQuery:Create("rating", "DECIMAL(13,4)")
+		statsTableQuery:PrimaryKey("id");
+	statsTableQuery:Execute()
+
 
 	local lastInsert = "last_insert_rowid"
 
@@ -72,10 +79,18 @@ end
 hook.Add("Athena_DatabaseConnected", "Athena_InitDatabase", Athena.InitDatabase)
 
 function Athena.SaveNewReport(report)
+	local reporterId64, reportedId64
+
+	reporterId64 = tonumber(util.SteamIDTo64(report.reporterId))
+
+	if reportedId then
+		reportedId64 = tonumber(util.SteamIDTo64(report.reportedId))
+	end
+
 	local insertObj = Athena.mysql:Insert("athena_reports")
-			insertObj:Insert("reporterid", report.reporterId)
+			insertObj:Insert("reporterid", reporterId64)
 			insertObj:Insert("reportername", report.reporterName)
-			insertObj:Insert("reportedid", report.reportedId)
+			insertObj:Insert("reportedid", reportedId64)
 			insertObj:Insert("reportedname", report.reportedName)
 			insertObj:Insert("time", os.time())
 			insertObj:Insert("message", report.message)
@@ -84,9 +99,10 @@ function Athena.SaveNewReport(report)
 end
 
 function Athena.UpdateReport(report)
+	local adminId64 = tonumber(util.SteamIDTo64(report.adminId))
 	local updateObj = Athena.mysql:Update("athena_reports")
 		updateObj:Update("adminname", report.adminName)
-		updateObj:Update("adminid", report.adminId)
+		updateObj:Update("adminid", adminId64)
 		updateObj:Update("status", report.status)
 		updateObj:Update("rating", report.rating)
 		updateObj:Where("id", report.id)
@@ -101,6 +117,7 @@ function Athena:RetrieveStats(ply)
 end
 
 function Athena:RetrieveAverageRating(ply)
+
 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
 	local data = file.Read(path, "DATA")
 
@@ -108,6 +125,10 @@ function Athena:RetrieveAverageRating(ply)
 end
 
 function Athena:SaveStats(ply, count)
+	local updateObj = Athena.mysql:Update("athena_stats")
+		updateObj:Update("completed", count)
+		updateObj:Where("id", report.id)
+	updateObj:Execute()
 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
 	local data = count
 
@@ -115,20 +136,40 @@ function Athena:SaveStats(ply, count)
 	Athena:RefreshStats(ply)
 end
 
-function Athena:RetrieveWarnings(ply)
+function Athena:RetrieveWarnings(ply, callback)
 	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
 
-	local path = "athena/warnings/" .. id .. ".txt"
-	local data = util.JSONToTable(file.Read(path, "DATA") or "")
-
-	return data or {}
+	local queryObj = Athena.mysql:Select("athena_warnings")
+		queryObj:Where("id", id)
+		queryObj:Callback(function(result, status, lastID)
+			local warnings = {}
+			if (type(result) == "table" and #result > 0) then
+				if (result[1].data != "NULL") then
+					warnings = Athena.von.deserialize(result[1].data)
+				end
+			else
+				Athena:SaveWarnings(id, warnings, true)
+			end
+			callback(warnings)
+		end)
+	queryObj:Execute()
 end
 
-function Athena:SaveWarnings(ply, warnings)
-	local path = "athena/warnings/" .. tostring(ply) .. ".txt"
-	local data = util.TableToJSON(warnings or {})
+function Athena:SaveWarnings(id, warnings, bNew)
+	--local path = "athena/warnings/" .. tostring(ply) .. ".txt"
+	local data = Athena.von.serialize(warnings or {})
 
-	file.Write(path, data)
+	if (bNew) then
+		local insertObj = Athena.mysql:Insert("athena_warnings");
+			insertObj:Insert("data", data);
+			insertObj:Insert("id", tonumber(id));
+		insertObj:Execute();
+	else
+		local updateObj = Athena.mysql:Update("athena_warnings");
+			updateObj:Update("data", data);
+			updateObj:Where("id", tonumber(id));
+		updateObj:Execute();
+	end;
 end 
 
 function Athena:RefreshStats(ply)

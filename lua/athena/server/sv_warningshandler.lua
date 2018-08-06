@@ -33,17 +33,17 @@ Athena.Server.filterOldWarnings = function(warnings)
 end
 
 Athena.Server.sendWarnings = function(ply, targetUID)
-	local targetWarnings = Athena:RetrieveWarnings(targetUID)
+	Athena:RetrieveWarnings(targetUID, function(targetWarnings)
+		targetWarnings = Athena.Server.filterOldWarnings(targetWarnings)
 
-	targetWarnings = Athena.Server.filterOldWarnings(targetWarnings)
+		net.Start("Athena_TransferWarnings")
+		net.WriteString(targetUID)
+		net.WriteTable(targetWarnings)
+		net.Send(ply)
 
-	net.Start("Athena_TransferWarnings")
-	net.WriteString(targetUID)
-	net.WriteTable(targetWarnings)
-	net.Send(ply)
-
-	net.Start("Athena_WarningsQueueFinish")
-	net.Send(ply)
+		net.Start("Athena_WarningsQueueFinish")
+		net.Send(ply)
+	end)
 end
 
 Athena.Server.WarnPlayer = function(target, description, severity, warner)
@@ -55,12 +55,12 @@ Athena.Server.WarnPlayer = function(target, description, severity, warner)
 	newWarning["description"] = description
 	newWarning["severity"] = severity
 	newWarning["warner"] = warner:Nick()
+	newWarning["warnerid"] = warner:SteamID64()
 
-	
-
-	local targetWarnings = Athena:RetrieveWarnings(target)
-	table.insert(targetWarnings, newWarning)
-	Athena:SaveWarnings(target, targetWarnings)
+	Athena:RetrieveWarnings(target, function(targetWarnings)
+		table.insert(targetWarnings, newWarning)
+		Athena:SaveWarnings(target, targetWarnings)	
+	end)
 
 	net.Start("Athena_warnNotify")
 	net.WriteString(warner:Nick())
@@ -115,14 +115,15 @@ net.Receive("Athena_RemoveWarning", function(len, ply)
 	local warningTime = tonumber(net.ReadString())
 	local playerID = net.ReadString()
 
-	local targetWarnings = Athena:RetrieveWarnings(playerID)
-	for k,v in pairs(targetWarnings) do
-		if v["time"] == tonumber(warningTime) then
-			table.remove(targetWarnings, k)
+	Athena:RetrieveWarnings(playerID, function(targetWarnings)
+		for k,v in pairs(targetWarnings) do
+			if v["time"] == tonumber(warningTime) then
+				table.remove(targetWarnings, k)
+			end
 		end
-	end
-
-	Athena:SaveWarnings(playerID, targetWarnings)
+	
+		Athena:SaveWarnings(playerID, targetWarnings)
+	end)
 
 	--Athena.Server.sendWarnings(ply, targetUID)
 end)

@@ -20,12 +20,12 @@ net.Receive("Athena_TransferWarnings", function(len)
 	local playerUID = net.ReadString()
 	local warningsTable = net.ReadTable()
 
-	// refresh warnings list in warnings module
+	-- refresh warnings list in warnings module
 	Athena.Client.Warnings[playerUID] = warningsTable
 	if IsValid(Athena.Elements.warningDetailsElements) then
 		Athena.Elements.warningDetailsElements.repopulateTable()
 	end
-	// refresh viewWarnings
+	-- refresh viewWarnings
 	if IsValid(Athena.Elements.warningsDetailsElements) then
 		Athena.Elements.warningsDetailsElements.repopulateTable()
 	end
