@@ -60,44 +60,43 @@ Athena.Server.WarnPlayer = function(target, description, severity, warner)
 	Athena:RetrieveWarnings(target, function(targetWarnings)
 		table.insert(targetWarnings, newWarning)
 		Athena:SaveWarnings(target, targetWarnings)	
-	end)
 
-	net.Start("Athena_warnNotify")
-	net.WriteString(warner:Nick())
-	local playerEntity = player.GetBySteamID64(target)
-	if playerEntity:IsValid() then net.WriteString(playerEntity:Nick()) else
-		net.WriteString(Athena.CommunityIDToSteamID(target))
-	end
-	net.WriteString(description)
-	net.WriteUInt(severity, 2)
-	net.Broadcast()
-
-	local totalSeverity = 0
-	local ply = player.GetBySteamID64(target)
-
-	for k,v in pairs(Athena.Server.filterOldWarnings(targetWarnings)) do
-		totalSeverity = totalSeverity + tonumber(v["severity"])
-	end
-
-	local max = 0
-	local index = -1
-
-	for k,v in pairs(Athena.Configuration.WarningThresholds) do
-		if totalSeverity >= v[1] && v[1] > max then
-			index = k
-			max = v[1]
+		net.Start("Athena_warnNotify")
+		net.WriteString(warner:Nick())
+		local playerEntity = player.GetBySteamID64(target)
+		if playerEntity:IsValid() then net.WriteString(playerEntity:Nick()) else
+			net.WriteString(Athena.CommunityIDToSteamID(target))
 		end
-	end
+		net.WriteString(description)
+		net.WriteUInt(severity, 2)
+		net.Broadcast()
 	
-	if index != -1 then
-		local row = Athena.Configuration.WarningThresholds[index]
-		if row[2] == "kick" then
-			Athena.kick(ply, "[Athena] Kicked for reaching warning threshhold. Exceeding " .. max .. " severity")
-		elseif row[2] == "ban" then
-			Athena.ban(ply, row[3], "[Athena] Banned for reaching warning threshhold. Exceeding " .. max .. " severity")
+		local totalSeverity = 0
+		local ply = player.GetBySteamID64(target)
+	
+		for k,v in pairs(Athena.Server.filterOldWarnings(targetWarnings)) do
+			totalSeverity = totalSeverity + tonumber(v["severity"])
 		end
-	end
-
+	
+		local max = 0
+		local index = -1
+	
+		for k,v in pairs(Athena.Configuration.WarningThresholds) do
+			if totalSeverity >= v[1] && v[1] > max then
+				index = k
+				max = v[1]
+			end
+		end
+		
+		if index != -1 then
+			local row = Athena.Configuration.WarningThresholds[index]
+			if row[2] == "kick" then
+				Athena.kick(ply, "[Athena] Kicked for reaching warning threshhold. Exceeding " .. max .. " severity")
+			elseif row[2] == "ban" then
+				Athena.ban(ply, row[3], "[Athena] Banned for reaching warning threshhold. Exceeding " .. max .. " severity")
+			end
+		end
+	end)
 end
 
 net.Receive("Athena_SendWarning", function(len, ply)
