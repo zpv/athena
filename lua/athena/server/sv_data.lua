@@ -140,12 +140,12 @@ function Athena:RetrieveWarnings(ply, callback)
 	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
 
 	local queryObj = Athena.mysql:Select("athena_warnings")
-		queryObj:Where("id", id)
+		queryObj:Where("id", tonumber(id))
 		queryObj:Callback(function(result, status, lastID)
 			local warnings = {}
 			if (type(result) == "table" and #result > 0) then
 				if (result[1].data != "NULL") then
-					warnings = Athena.von.deserialize(result[1].data)
+					warnings = Athena.von.deserialize(result[1].data) or {}
 				end
 			else
 				Athena:SaveWarnings(id, warnings, true)
