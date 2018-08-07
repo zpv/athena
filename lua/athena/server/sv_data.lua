@@ -153,6 +153,14 @@ function Athena:RetrieveStats(ply, callback)
 	queryObj:Execute()
 end
 
+function Athena:SaveCompleted(ply, completed)
+	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+	local updateObj = Athena.mysql:Update("athena_stats");
+		updateObj:Update("completed", completed);
+		updateObj:Where("id", id);
+	updateObj:Execute();
+end
+
 function Athena:SaveRating(ply, rating, num)
 	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
 	local updateObj = Athena.mysql:Update("athena_stats");

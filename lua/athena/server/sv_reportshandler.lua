@@ -162,7 +162,7 @@ net.Receive("Athena_TransferStatuses", function(len, ply)
 
 	if report.status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
 		if not report.GivenStat then
-			Athena:SaveStats(ply, Athena:RetrieveStats(ply) + 1)
+			Athena:SaveCompleted(ply, Athena:RetrieveStats(ply).completed + 1)
 			report.GivenStat = true
 		end
 	end

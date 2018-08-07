@@ -466,6 +466,19 @@ function Athena.buildMenu()
 		draw.SimpleText(Athena.Client.CompletedReports, "AthenaOswald25Normal", w / 2, 32, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
 	end
 
+	if Athena.Configuration.StaffRatings then
+		Athena.Elements.ratingCard = vgui.Create("Panel", Athena.Elements.mainFrame)
+		Athena.Elements.ratingCard:SetPos( 70, 300)
+		Athena.Elements.ratingCard:SetSize( 120, 67)
+
+		Athena.Elements.ratingCard.Paint = function(self, w, h)
+			draw.RoundedBox( 4, 0, 0, w, h, Color( 150, 150, 150, 120*alpha ))
+			draw.RoundedBox( 4, 1, 1, w-2, h-2, Color( 200, 200, 200, 80*alpha ))
+			draw.SimpleText("Rating", "AthenaOswald20Light", w / 2, 11, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+			draw.SimpleText(Athena.Client.AverageRating, "AthenaOswald25Normal", w / 2, 32, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+		end
+	end
+
 	--[[
 
 	Athena.Elements.reportsCard = vgui.Create("Panel", Athena.Elements.adminCard)
