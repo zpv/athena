@@ -141,6 +141,9 @@ function Athena:RetrieveStats(ply, callback)
 		queryObj:Where("id", id)
 		queryObj:Callback(function(result, status, lastID)
 			local stats = {}
+			stats.completed = 0
+			stats.rated = 0
+			stats.rating = 0
 			if (type(result) == "table" and #result > 0) then
 				stats.completed = result[1].completed
 				stats.rated = result[1].rated
