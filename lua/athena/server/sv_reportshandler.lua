@@ -8,9 +8,10 @@ local Athena = Athena
 
 util.AddNetworkString("Athena_TransferReports")
 util.AddNetworkString("Athena_SendReport")
+util.AddNetworkString("Athena_TransferStats")
 util.AddNetworkString("Athena_TransferStatuses")
 util.AddNetworkString("Athena_RequestReports")
-util.AddNetworkString("Athena_RequestStatuses")
+util.AddNetworkString("Athena_RequestStats")
 util.AddNetworkString("Athena_QueueFinish")
 util.AddNetworkString("Athena_RequestRating")
 util.AddNetworkString("Athena_SendRating")
@@ -122,6 +123,7 @@ net.Receive("Athena_RequestRating", function(len, ply)
 	if report == nil or report.reporterId != ply:SteamID() then return end
 	report.rating = math.Clamp(rating, 0, 5)
 	
+	Athena:AddRating(util.SteamIDTo64(report.adminId), rating)
 	Athena.UpdateReport(report)
 
 	local admin = player.GetBySteamID(report.adminId)
@@ -139,19 +141,10 @@ Athena.Server.requestRating = function(ply, reportId)
 	end
 end
 
-net.Receive("Athena_RequestStatuses", function(len, ply)
-	if not Athena.hasPermission(ply) then print("Cannot send statuses. Access denied to: " .. ply:Nick()) return end
-	Athena.Server.sendStatuses(ply)
+net.Receive("Athena_RequestStats", function(len, ply)
+	if not Athena.hasPermission(ply) then print("Cannot send stats. Access denied to: " .. ply:Nick()) return end
 	Athena:RefreshStats(ply)
 end)
-
-Athena.Server.sendStatuses = function(ply)
-	net.Start("Athena_TransferStatuses")
-	net.WriteTable(Athena.Server.ReportStatuses)
-	net.Send(ply)
-	net.Start("Athena_QueueFinish")
-	net.Send(ply)
-end
 
 net.Receive("Athena_RequestReports", function(len, ply)
 	if not Athena.hasPermission(ply) then print("No permissions ... bitch.") return end

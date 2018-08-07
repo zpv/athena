@@ -109,32 +109,77 @@ function Athena.UpdateReport(report)
 	updateObj:Execute()
 end
 
-function Athena:RetrieveStats(ply)
-	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
-	local data = file.Read(path, "DATA")
+-- function Athena:RetrieveStats(ply)
+-- 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+-- 	local data = file.Read(path, "DATA")
 
-	return tonumber(data) or 0
+-- 	return tonumber(data) or 0
+-- end
+
+-- function Athena:RetrieveAverageRating(ply)
+
+-- 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+-- 	local data = file.Read(path, "DATA")
+
+-- 	return tonumber(data) or 0
+-- end
+
+-- function Athena:SaveStats(ply, count)
+-- 	local updateObj = Athena.mysql:Update("athena_stats")
+-- 		updateObj:Update("completed", count)
+-- 		updateObj:Where("id", report.id)
+-- 	updateObj:Execute()
+
+-- 	Athena:RefreshStats(ply)
+-- end
+
+
+function Athena:RetrieveStats(ply, callback)
+	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+
+	local queryObj = Athena.mysql:Select("athena_stats")
+		queryObj:Where("id", id)
+		queryObj:Callback(function(result, status, lastID)
+			local stats = {}
+			if (type(result) == "table" and #result > 0) then
+				stats.completed = result[1].completed
+				stats.rated = result[1].rated
+				stats.rating = result[1].rating
+			else
+				Athena:InitStats(id)
+			end
+			callback(stats)
+		end)
+	queryObj:Execute()
 end
 
-function Athena:RetrieveAverageRating(ply)
-
-	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
-	local data = file.Read(path, "DATA")
-
-	return tonumber(data) or 0
+function Athena:SaveRating(ply, rating, num)
+	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+	local updateObj = Athena.mysql:Update("athena_stats");
+		updateObj:Update("rated", num);
+		updateObj:Update("rating", rating);
+		updateObj:Where("id", id);
+	updateObj:Execute();
 end
 
-function Athena:SaveStats(ply, count)
-	local updateObj = Athena.mysql:Update("athena_stats")
-		updateObj:Update("completed", count)
-		updateObj:Where("id", report.id)
-	updateObj:Execute()
-	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
-	local data = count
+-- Moving average calculation
+function Athena:AddRating(ply, rating)
+	Athena:RetrieveStats(ply, function(stats)
+		local num = stats.rated + 1
+		local newRating = stats.rating + tonumber(rating)
 
-	file.Write(path, data)
-	Athena:RefreshStats(ply)
+		Athena:SaveRating(ply, newRating, num)
+	end)
 end
+
+function Athena:InitStats(id)
+	local insertObj = Athena.mysql:Insert("athena_stats");
+		insertObj:Insert("completed", 0);
+		insertObj:Insert("rated", 0);
+		insertObj:Insert("rating", 0);
+		insertObj:Insert("id", id);
+	insertObj:Execute();
+end 
 
 function Athena:RetrieveWarnings(ply, callback)
 	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
@@ -144,7 +189,6 @@ function Athena:RetrieveWarnings(ply, callback)
 		queryObj:Callback(function(result, status, lastID)
 			local warnings = {}
 			if (type(result) == "table" and #result > 0) then
-
 				if (result[1].data != "NULL" and result[1].data != nil) then
 					warnings = util.JSONToTable(result[1].data)
 				end
@@ -174,6 +218,17 @@ function Athena:SaveWarnings(id, warnings, bNew)
 end 
 
 function Athena:RefreshStats(ply)
-	ply:SetNWInt('Athena_CompletedReports', Athena:RetrieveStats(ply))
-	ply:SetNWInt('Athena_AverageRating', Athena:RetrieveAverageRating(ply))
+	Athena:RetrieveStats(ply, function(stats)
+		
+		ply:SetNWInt('Athena_CompletedReports', stats.completed)
+		ply:SetNWInt('Athena_Rating', stats.rating)
+		ply:SetNWInt('Athena_RatingNum', stats.rated)
+
+		net.Start("Athena_RequestStats")
+		net.Send(ply)
+		net.Start("Athena_QueueFinish")
+		net.Send(ply)
+	end)
+	-- ply:SetNWInt('Athena_CompletedReports', Athena:RetrieveStats(ply))
+	-- ply:SetNWInt('Athena_AverageRating', Athena:RetrieveAverageRating(ply))
 end

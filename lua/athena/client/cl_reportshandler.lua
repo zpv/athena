@@ -9,6 +9,8 @@ local Athena = Athena
 Athena.Client.Reports = Athena.Client.Reports or {}
 Athena.Client.ReportStatuses = Athena.Client.ReportStatuses or {}
 Athena.Client.CompletedReports = Athena.Client.CompletedReports or 0
+Athena.Client.AverageRating = Athena.Client.AverageRating or 0
+
 
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2
@@ -93,10 +95,16 @@ net.Receive("Athena_TransferReports", function(len)
 	Athena.Client.Reports[report.id] = report
 end)
 
-net.Receive("Athena_TransferStatuses", function(len)
-	local receivedTable = net.ReadTable()
-	Athena.Client.ReportStatuses = receivedTable
+net.Receive("Athena_RequestStats", function(len)
 	Athena.Client.CompletedReports = LocalPlayer():GetNWInt('Athena_CompletedReports')
+
+	-- Compute average rating
+	if Athena.Configuration.StaffRatings then
+		local rating = LocalPlayer():GetNWInt('Athena_Rating')
+		local num = LocalPlayer():GetNWInt('Athena_RatingNum')
+
+		Athena.Client.AverageRating = math.Round((rating / num), 2)
+	end
 end)
 
 net.Receive("Athena_QueueFinish", function(len)
@@ -111,7 +119,7 @@ net.Receive("Athena_QueueFinish", function(len)
 	end
 end)
 
-hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestStatuses") net.SendToServer() end end)
+hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestStats") net.SendToServer() end end)
 
 concommand.Add("athena_stats", function()
 	if LocalPlayer():IsAdmin() then
