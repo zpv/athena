@@ -158,6 +158,9 @@ end
 
 function Athena:SaveCompleted(ply, completed)
 	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+	print(id = type(ply) == table and ply:SteamID64())
+	print(tostring(ply))
+	print(id)
 	local updateObj = Athena.mysql:Update("athena_stats");
 		updateObj:Update("completed", completed);
 		updateObj:Where("id", id);
@@ -186,7 +189,6 @@ end
 function Athena:AddCompleted(ply)
 	Athena:RetrieveStats(ply, function(stats)
 		local num = stats.completed + 1
-
 		Athena:SaveCompleted(ply, num)
 	end)
 end
