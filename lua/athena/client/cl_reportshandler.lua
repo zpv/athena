@@ -96,14 +96,16 @@ net.Receive("Athena_TransferReports", function(len)
 end)
 
 net.Receive("Athena_RequestStats", function(len)
-	Athena.Client.CompletedReports = LocalPlayer():GetNWInt('Athena_CompletedReports')
-
+	Athena.Client.CompletedReports = net.ReadInt(16)
 	-- Compute average rating
 	if Athena.Configuration.StaffRatings then
-		local rating = LocalPlayer():GetNWInt('Athena_Rating')
-		local num = LocalPlayer():GetNWInt('Athena_RatingNum')
-
+		local rating = net.ReadInt(16) or 0
+		local num = net.ReadInt(16) or 0
 		Athena.Client.AverageRating = math.Round((rating / num), 2)
+		if Athena.Client.AverageRating != Athena.Client.AverageRating then
+			Athena.Client.AverageRating = 0
+		end
+
 	end
 end)
 

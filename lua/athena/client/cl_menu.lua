@@ -474,9 +474,11 @@ function Athena.buildMenu()
 		Athena.Elements.ratingCard.Paint = function(self, w, h)
 			draw.RoundedBox( 4, 0, 0, w, h, Color( 150, 150, 150, 120*alpha ))
 			draw.RoundedBox( 4, 1, 1, w-2, h-2, Color( 200, 200, 200, 80*alpha ))
-			draw.SimpleText("Rating", "AthenaOswald20Light", w / 2, 11, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
-			draw.SimpleText(Athena.Client.AverageRating, "AthenaOswald25Normal", w / 2, 32, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+			draw.SimpleText("Your Rating", "AthenaOswald20Light", w / 2, 11, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+			draw.SimpleText(Athena.Client.AverageRating .. " / 5", "AthenaOswald25Normal", w / 2, 32, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
 		end
+
+		Athena.Elements.ratingCard:MoveTo(340, 50,0.3,0,0.2)
 	end
 
 	--[[

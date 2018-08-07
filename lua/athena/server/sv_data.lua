@@ -135,7 +135,7 @@ end
 
 
 function Athena:RetrieveStats(ply, callback)
-	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
 
 	local queryObj = Athena.mysql:Select("athena_stats")
 		queryObj:Where("id", id)
@@ -157,10 +157,8 @@ function Athena:RetrieveStats(ply, callback)
 end
 
 function Athena:SaveCompleted(ply, completed)
-	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
-	print(id = type(ply) == table and ply:SteamID64())
-	print(tostring(ply))
-	print(id)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
+
 	local updateObj = Athena.mysql:Update("athena_stats");
 		updateObj:Update("completed", completed);
 		updateObj:Where("id", id);
@@ -168,11 +166,17 @@ function Athena:SaveCompleted(ply, completed)
 end
 
 function Athena:SaveRating(ply, rating, num)
-	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
 	local updateObj = Athena.mysql:Update("athena_stats");
 		updateObj:Update("rated", num);
 		updateObj:Update("rating", rating);
 		updateObj:Where("id", id);
+		updateObj:Callback(function()
+			local admin = player.GetBySteamID64(id)
+			if admin then
+				Athena:RefreshStats(admin)
+			end
+		end)
 	updateObj:Execute();
 end
 
@@ -203,7 +207,7 @@ function Athena:InitStats(id)
 end 
 
 function Athena:RetrieveWarnings(ply, callback)
-	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
 
 	local queryObj = Athena.mysql:Select("athena_warnings")
 		queryObj:Where("id", id)
@@ -240,12 +244,15 @@ end
 
 function Athena:RefreshStats(ply)
 	Athena:RetrieveStats(ply, function(stats)
-		
+		PrintTable(stats)
 		ply:SetNWInt('Athena_CompletedReports', stats.completed)
 		ply:SetNWInt('Athena_Rating', stats.rating)
 		ply:SetNWInt('Athena_RatingNum', stats.rated)
-
+		
 		net.Start("Athena_RequestStats")
+		net.WriteInt(stats.completed, 16)
+		net.WriteInt(stats.rating, 16)
+		net.WriteInt(stats.rated, 16)
 		net.Send(ply)
 		net.Start("Athena_QueueFinish")
 		net.Send(ply)
