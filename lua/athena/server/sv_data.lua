@@ -180,6 +180,14 @@ function Athena:AddRating(ply, rating)
 	end)
 end
 
+function Athena:AddCompleted(ply)
+	Athena:RetrieveStats(ply, function(stats)
+		local num = stats.completed + 1
+
+		Athena:SaveCompleted(ply, num)
+	end)
+end
+
 function Athena:InitStats(id)
 	local insertObj = Athena.mysql:Insert("athena_stats");
 		insertObj:Insert("completed", 0);
