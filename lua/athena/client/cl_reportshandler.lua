@@ -129,6 +129,9 @@ concommand.Add("athena_stats", function()
 		for k,v in pairs(player.GetAll()) do
 			if Athena.hasPermission(v) then
 				print(v:Nick() .. "'s Completed Reports: " .. v:GetNWInt('Athena_CompletedReports'))
+				if Athena.Configuration.StaffRatings then
+					print(v:Nick() .. "'s Average Rating: " .. math.Round((v:GetNWInt('Athena_Rating') / v:GetNWInt('Athena_RatingNum')), 2))
+				end
 			end
 		end
 		print("\n-=-=-=-=- Athena Statistics -=-=-=-=-")

@@ -133,6 +133,26 @@ end
 -- 	Athena:RefreshStats(ply)
 -- end
 
+-- Migrate stats from older file-based data storage.
+function Athena:MigrateStats()
+	local dir = "athena/stats"
+	local list = file.Find(dir .. "/*.txt", "DATA")
+	for _, f in pairs(list) do 
+		local directory = dir.."/"..f
+
+		local id = string.gsub(f, ".txt", "")
+		local data = tonumber(file.Read(path, "DATA")) or 0
+
+		Athena:RetrieveStats(id, function()
+			local num = data
+			Athena:SaveCompleted(ply, num)
+		end)
+	end
+
+	print("Migrated stats data from I/O.")
+end
+
+concommand.Add("athena_data_", Athena:MigrateStats, nil, nil, FCVAR_SERVER_CAN_EXECUTE)
 
 function Athena:RetrieveStats(ply, callback)
 	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)

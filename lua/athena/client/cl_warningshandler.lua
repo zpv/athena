@@ -48,30 +48,3 @@ Athena.Client.removeWarning = function(target, time)
 	net.WriteString(target)
 	net.SendToServer()
 end
-
---[[
-local function AutoComplete(cmd, stringargs)
-	print(stringargs)
-	stringargs = string.Trim( stringargs ) -- Remove any spaces before or after.
-	stringargs = string.lower( stringargs )
-
-	local tbl = {}
-
-	for k, v in pairs( player.GetAll() ) do
-		local nick = v:Nick()
-		if string.find( string.lower( nick ), stringargs ) then
-			nick = "\"" .. nick .. "\"" -- We put quotes around it incase players have spaces in their names.
-			nick = "athena_warn " .. nick -- We also need to put the cmd before for it to work properly.
-
-			table.insert( tbl, nick )
-		end
-	end
-
-	return tbl
-end
-
-concommand.Add("athena_warn", function(ply, cmd, args, argstr)
-
-
-end, AutoComplete)
-]]
