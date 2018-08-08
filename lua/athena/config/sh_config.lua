@@ -34,6 +34,9 @@ Athena.Configuration.WarningDecay = 604800
 -- Valid settings are: "auto", "ulx", "serverguard", "other"
 Athena.Configuration.AdminPlugin = "auto"
 
+-- Enable ability for players to rate staff after admin sit
+Athena.Configuration.StaffRatings = true
+
 Athena.Configuration.WarnReasons = {
 	"Breaking NLR",
 	"Committing RDM",

@@ -11,8 +11,9 @@ util.AddNetworkString("Athena_warnNotify")
 
 Athena.Notifications = {}
 
-ATHENA_NOTIFICATION_COMPLETE = 3
-ATHENA_NOTIFICATION_REPORT = 4
+ATHENA_NOTIFICATION_COMPLETE 	= 3
+ATHENA_NOTIFICATION_REPORT 		= 4
+ATHENA_NOTIFICATION_RATED 		= 5
 
 --[[
 Athena.Notifications.writeNotification = function(...)

@@ -8,12 +8,14 @@ local Athena = Athena
 
 Athena.Client.Reports = Athena.Client.Reports or {}
 Athena.Client.ReportStatuses = Athena.Client.ReportStatuses or {}
-Athena.Client.CompletedReports = 0
+Athena.Client.CompletedReports = Athena.Client.CompletedReports or 0
+Athena.Client.AverageRating = Athena.Client.AverageRating or 0
+
 
 ATHENA_STATUS_WAITING		= 1
 ATHENA_STATUS_INPROGRESS	= 2
 ATHENA_STATUS_COMPLETED		= 3
-
+ATHENA_STATUS_REJECTED		= 4
 --[[
 
 Athena.Client.readReport = function()
@@ -41,18 +43,18 @@ Athena.Client.requestReports = function()
 	net.SendToServer()
 end
 
-Athena.Client.updateStatus = function(reportIndex, reportStatus)
-	if Athena.Client.ReportStatuses[tonumber(reportIndex)] ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
-		if not Athena.Client.Reports[reportIndex].GivenStat then
+Athena.Client.updateStatus = function(reportId, reportStatus)
+	if Athena.Client.Reports[reportId].status ~= ATHENA_STATUS_COMPLETED and reportStatus == ATHENA_STATUS_COMPLETED then
+		if not Athena.Client.Reports[reportId].GivenStat then
 			Athena.Client.CompletedReports = Athena.Client.CompletedReports + 1
-			Athena.Client.Reports[reportIndex].GivenStat = true
+			Athena.Client.Reports[reportId].GivenStat = true
 		end
 	end
 
-	Athena.Client.ReportStatuses[tonumber(reportIndex)] = reportStatus
+	Athena.Client.Reports[reportId].status = reportStatus
 
 	net.Start("Athena_TransferStatuses")
-	net.WriteInt(reportIndex, 16)
+	net.WriteInt(reportId, 16)
 	net.WriteInt(reportStatus, 16)
 	net.SendToServer()
 end
@@ -70,34 +72,41 @@ Athena.Client.sendReport = function(reportedPlayer, reportedPlayerID, message)
 	net.SendToServer()
 end
 
-net.Receive("Athena_TransferReports", function(len)
+Athena.Client.sendRating = function(reportId, rating)
+	net.Start("Athena_RequestRating")
 
-	local renamedTable = {}
---	renamedTable["UID"] = net.ReadUInt(32)
-	local receivedTable = net.ReadTable()
-	renamedTable["UID"] = net.ReadUInt(32)
-	renamedTable["reporter"] = receivedTable[1]
-	renamedTable["reporterID"] = receivedTable[2]
-	renamedTable["timeOfReport"] = receivedTable[3]
-	renamedTable["message"] = receivedTable[4]
-	if receivedTable[5] then
-		renamedTable["reportedID"] = receivedTable[5]
-	end
-	if receivedTable[6] then
-		renamedTable["reported"] = receivedTable[6]
-	end
+	net.WriteInt(reportId, 16)
+	net.WriteInt(rating, 16)
 
-	table.insert(Athena.Client.Reports, renamedTable)
-	if not Athena.Client.ReportStatuses[renamedTable["UID"]] then
-		Athena.Client.ReportStatuses[renamedTable["UID"]] = ATHENA_STATUS_WAITING
-	end
+	net.SendToServer()
+end
 
+net.Receive("Athena_RequestRating", function(len)
+	local reportId = net.ReadInt(16)
+
+	if Athena.Client.Reports[reportId] then
+		Athena.rateMenu.startMenu(reportId)
+	end
 end)
 
-net.Receive("Athena_TransferStatuses", function(len)
-	local receivedTable = net.ReadTable()
-	Athena.Client.ReportStatuses = receivedTable
-	Athena.Client.CompletedReports = LocalPlayer():GetNWInt('Athena_CompletedReports')
+net.Receive("Athena_TransferReports", function(len)
+	local report = net.ReadTable()
+
+	Athena.Client.Reports[report.id] = report
+end)
+
+net.Receive("Athena_RequestStats", function(len)
+	Athena.Client.CompletedReports = net.ReadInt(16)
+	-- Compute average rating
+	if Athena.Configuration.StaffRatings then
+		local rating = net.ReadInt(16) or 0
+		local num = net.ReadInt(16) or 0
+		Athena.Client.AverageRating = math.Round((rating / num), 2)
+		if Athena.Client.AverageRating != Athena.Client.AverageRating then
+			Athena.Client.AverageRating = 0
+		end
+
+	end
 end)
 
 net.Receive("Athena_QueueFinish", function(len)
@@ -112,7 +121,7 @@ net.Receive("Athena_QueueFinish", function(len)
 	end
 end)
 
-hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestStatuses") net.SendToServer() end end)
+hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestStats") net.SendToServer() end end)
 
 concommand.Add("athena_stats", function()
 	if LocalPlayer():IsAdmin() then
@@ -120,6 +129,9 @@ concommand.Add("athena_stats", function()
 		for k,v in pairs(player.GetAll()) do
 			if Athena.hasPermission(v) then
 				print(v:Nick() .. "'s Completed Reports: " .. v:GetNWInt('Athena_CompletedReports'))
+				if Athena.Configuration.StaffRatings then
+					print(v:Nick() .. "'s Average Rating: " .. math.Round((v:GetNWInt('Athena_Rating') / v:GetNWInt('Athena_RatingNum')), 2))
+				end
 			end
 		end
 		print("\n-=-=-=-=- Athena Statistics -=-=-=-=-")

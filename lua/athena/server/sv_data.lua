@@ -10,37 +10,286 @@ for _, dir in ipairs( { "athena/", "athena/stats/", "athena/warnings/" } ) do
 	end
 end
 
-function Athena:RetrieveStats(ply)
-	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
-	local data = file.Read(path, "DATA")
+function Athena.ConnectDatabase()
+	local config = Athena.Configuration.MySQL
 
-	return tonumber(data) or 0
+	if (config.Enabled) then
+		Athena.mysql:Connect(config.Host, config.Username, config.Password, config.Database, config.Port, config.Socket, nil, config.Module)
+		return
+	end
+
+	Athena.mysql:Connect();
 end
 
-function Athena:SaveStats(ply, count)
-	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
-	local data = count
+hook.Add("Initialize", "Athena_ConnectDatabase", Athena.ConnectDatabase)
 
-	file.Write(path, data)
-	Athena:RefreshStats(ply)
+function Athena.InitDatabase()
+	local reportsTableQuery = Athena.mysql:Create("athena_reports")
+		reportsTableQuery:Create("id", "INTEGER NOT NULL AUTO_INCREMENT")
+		reportsTableQuery:Create("reporterid","VARCHAR(17) NOT NULL")
+		reportsTableQuery:Create("reportername","VARCHAR(45)")
+		reportsTableQuery:Create("reportedid","VARCHAR(17)")
+		reportsTableQuery:Create("reportedname","VARCHAR(45)")
+		reportsTableQuery:Create("time","INTEGER")
+		reportsTableQuery:Create("message","TEXT")
+		reportsTableQuery:Create("status","INTEGER")
+		reportsTableQuery:Create("adminname","VARCHAR(45)")
+		reportsTableQuery:Create("adminid","VARCHAR(17)")
+		reportsTableQuery:Create("rating", "INTEGER")
+		reportsTableQuery:Create("comments", "TEXT")
+		reportsTableQuery:PrimaryKey("id");
+	reportsTableQuery:Execute()
+
+	local warningsTableQuery = Athena.mysql:Create("athena_warnings")
+		warningsTableQuery:Create("id", "VARCHAR(17) NOT NULL")
+		warningsTableQuery:Create("data", "TEXT")
+		warningsTableQuery:PrimaryKey("id");
+
+	warningsTableQuery:Execute()
+
+	local statsTableQuery = Athena.mysql:Create("athena_stats")
+		statsTableQuery:Create("id", "VARCHAR(17) NOT NULL")
+		statsTableQuery:Create("name", "VARCHAR(45)")
+		statsTableQuery:Create("completed", "INTEGER")
+		statsTableQuery:Create("rated", "INTEGER")
+		statsTableQuery:Create("rating", "DECIMAL(13,4)")
+		statsTableQuery:PrimaryKey("id");
+	statsTableQuery:Execute()
+
+
+	local lastInsert = "last_insert_rowid"
+
+	if Athena.Configuration.MySQL.Enabled then
+		lastInsert = "last_insert_id"
+	end
+
+	Athena.mysql:RawQuery("SELECT count(id) FROM athena_reports", function(result)
+		if result then
+			Athena.Server.LastId = result[1]["count(id)"]
+		end
+	end)
+
+	-- MySQLite.query([[
+	-- 	SELECT last_insert_rowid() as id
+	-- 	]], function(tbl)
+	-- 		if tbl then
+	-- 			Athena.Server.LastId = tbl.id
+	-- 		end
+	-- 	end)
 end
 
-function Athena:RetrieveWarnings(ply)
-	local id = type(ply) == table and ply:SteamID64() or tostring(ply)
+hook.Add("Athena_DatabaseConnected", "Athena_InitDatabase", Athena.InitDatabase)
 
-	local path = "athena/warnings/" .. id .. ".txt"
-	local data = util.JSONToTable(file.Read(path, "DATA") or "")
+function Athena.SaveNewReport(report)
+	local reporterId64, reportedId64
 
-	return data or {}
+	reporterId64 = util.SteamIDTo64(report.reporterId)
+
+	if report.reportedId then
+		reportedId64 = util.SteamIDTo64(report.reportedId)
+	end
+
+	local insertObj = Athena.mysql:Insert("athena_reports")
+			insertObj:Insert("reporterid", reporterId64)
+			insertObj:Insert("reportername", report.reporterName)
+			insertObj:Insert("reportedid", reportedId64)
+			insertObj:Insert("reportedname", report.reportedName)
+			insertObj:Insert("time", os.time())
+			insertObj:Insert("message", report.message)
+			insertObj:Insert("status", report.status)
+		insertObj:Execute()
 end
 
-function Athena:SaveWarnings(ply, warnings)
-	local path = "athena/warnings/" .. tostring(ply) .. ".txt"
+function Athena.UpdateReport(report)
+	local adminId64 = util.SteamIDTo64(report.adminId)
+	local updateObj = Athena.mysql:Update("athena_reports")
+		updateObj:Update("adminname", report.adminName)
+		updateObj:Update("adminid", adminId64)
+		updateObj:Update("status", report.status or 0)
+		updateObj:Update("comments", report.comments or "")
+		updateObj:Update("rating", report.rating or 0)
+		updateObj:Where("id", report.id)
+	updateObj:Execute()
+end
+
+-- function Athena:RetrieveStats(ply)
+-- 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+-- 	local data = file.Read(path, "DATA")
+
+-- 	return tonumber(data) or 0
+-- end
+
+-- function Athena:RetrieveAverageRating(ply)
+
+-- 	local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+-- 	local data = file.Read(path, "DATA")
+
+-- 	return tonumber(data) or 0
+-- end
+
+-- function Athena:SaveStats(ply, count)
+-- 	local updateObj = Athena.mysql:Update("athena_stats")
+-- 		updateObj:Update("completed", count)
+-- 		updateObj:Where("id", report.id)
+-- 	updateObj:Execute()
+
+-- 	Athena:RefreshStats(ply)
+-- end
+
+-- Migrate stats from older file-based data storage.
+-- function Athena:MigrateStats()
+-- 	local dir = "athena/stats"
+-- 	local list = file.Find(dir .. "/*.txt", "DATA")
+-- 	for _, f in pairs(list) do 
+-- 		local directory = dir.."/"..f
+
+-- 		local id = string.gsub(f, ".txt", "")
+-- 		local data = tonumber(file.Read(path, "DATA")) or 0
+
+-- 		Athena:RetrieveStats(id, function()
+-- 			local num = data
+-- 			Athena:SaveCompleted(ply, num)
+-- 		end)
+-- 	end
+
+-- 	print("Migrated stats data from I/O.")
+-- end
+
+-- concommand.Add("athena_data_migrate", Athena.MigrateStats, nil, nil, FCVAR_SERVER_CAN_EXECUTE)
+
+function Athena:RetrieveStats(ply, callback)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
+
+	local queryObj = Athena.mysql:Select("athena_stats")
+		queryObj:Where("id", id)
+		queryObj:Callback(function(result, status, lastID)
+			local stats = {}
+			stats.completed = 0
+			stats.rated = 0
+			stats.rating = 0
+			if (type(result) == "table" and #result > 0) then
+				stats.completed = result[1].completed
+				stats.rated = result[1].rated
+				stats.rating = result[1].rating
+			else
+				Athena:InitStats(id)
+			end
+			callback(stats)
+		end)
+	queryObj:Execute()
+end
+
+function Athena:SaveCompleted(ply, completed)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
+
+	local updateObj = Athena.mysql:Update("athena_stats");
+		updateObj:Update("completed", completed);
+		updateObj:Where("id", id);
+	updateObj:Execute();
+end
+
+function Athena:SaveRating(ply, rating, num)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
+	local updateObj = Athena.mysql:Update("athena_stats");
+		updateObj:Update("rated", num);
+		updateObj:Update("rating", rating);
+		updateObj:Where("id", id);
+		updateObj:Callback(function()
+			local admin = player.GetBySteamID64(id)
+			if admin then
+				Athena:RefreshStats(admin)
+			end
+		end)
+	updateObj:Execute();
+end
+
+-- Moving average calculation
+function Athena:AddRating(ply, rating)
+	Athena:RetrieveStats(ply, function(stats)
+		local num = stats.rated + 1
+		local newRating = stats.rating + tonumber(rating)
+
+		Athena:SaveRating(ply, newRating, num)
+	end)
+end
+
+function Athena:AddCompleted(ply)
+	Athena:RetrieveStats(ply, function(stats)
+		local num = stats.completed + 1
+		Athena:SaveCompleted(ply, num)
+	end)
+end
+
+function Athena:InitStats(id)
+	local ply = player.GetBySteamID64(id)
+	local nick = ""
+	local data = 0
+
+	if ply then
+		local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+		data = tonumber(file.Read(path, "DATA")) or 0
+		nick = ply:Nick()
+	end
+
+	local insertObj = Athena.mysql:Insert("athena_stats");
+		insertObj:Insert("name", nick);
+		insertObj:Insert("completed", data);
+		insertObj:Insert("rated", 0);
+		insertObj:Insert("rating", 0);
+		insertObj:Insert("id", id);
+	insertObj:Execute();
+end 
+
+function Athena:RetrieveWarnings(ply, callback)
+	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
+
+	local queryObj = Athena.mysql:Select("athena_warnings")
+		queryObj:Where("id", id)
+		queryObj:Callback(function(result, status, lastID)
+			local warnings = {}
+			if (type(result) == "table" and #result > 0) then
+				if (result[1].data != "NULL" and result[1].data != nil) then
+					warnings = util.JSONToTable(result[1].data)
+				end
+			else
+				Athena:SaveWarnings(id, warnings, true)
+			end
+			callback(warnings)
+		end)
+	queryObj:Execute()
+end
+
+function Athena:SaveWarnings(id, warnings, bNew)
+	--local path = "athena/warnings/" .. tostring(ply) .. ".txt"
 	local data = util.TableToJSON(warnings or {})
 
-	file.Write(path, data)
-end
+	if (bNew) then
+		local insertObj = Athena.mysql:Insert("athena_warnings");
+			insertObj:Insert("data", data);
+			insertObj:Insert("id", id);
+		insertObj:Execute();
+	else
+		local updateObj = Athena.mysql:Update("athena_warnings");
+			updateObj:Update("data", data);
+			updateObj:Where("id", id);
+		updateObj:Execute();
+	end;
+end 
 
 function Athena:RefreshStats(ply)
-	ply:SetNWInt('Athena_CompletedReports', Athena:RetrieveStats(ply))
+	Athena:RetrieveStats(ply, function(stats)
+		ply:SetNWInt('Athena_CompletedReports', stats.completed)
+		ply:SetNWInt('Athena_Rating', stats.rating)
+		ply:SetNWInt('Athena_RatingNum', stats.rated)
+		
+		net.Start("Athena_RequestStats")
+		net.WriteInt(stats.completed, 16)
+		net.WriteInt(stats.rating, 16)
+		net.WriteInt(stats.rated, 16)
+		net.Send(ply)
+		net.Start("Athena_QueueFinish")
+		net.Send(ply)
+	end)
+	-- ply:SetNWInt('Athena_CompletedReports', Athena:RetrieveStats(ply))
+	-- ply:SetNWInt('Athena_AverageRating', Athena:RetrieveAverageRating(ply))
 end
