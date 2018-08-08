@@ -30,12 +30,13 @@ function Athena.InitDatabase()
 		reportsTableQuery:Create("reportername","VARCHAR(45)")
 		reportsTableQuery:Create("reportedid","VARCHAR(17)")
 		reportsTableQuery:Create("reportedname","VARCHAR(45)")
-		reportsTableQuery:Create("time","TIMESTAMP")
+		reportsTableQuery:Create("time","INTEGER")
 		reportsTableQuery:Create("message","TEXT")
 		reportsTableQuery:Create("status","INTEGER")
 		reportsTableQuery:Create("adminname","VARCHAR(45)")
 		reportsTableQuery:Create("adminid","VARCHAR(17)")
 		reportsTableQuery:Create("rating", "INTEGER")
+		reportsTableQuery:Create("comments", "TEXT")
 		reportsTableQuery:PrimaryKey("id");
 	reportsTableQuery:Execute()
 
@@ -83,7 +84,7 @@ function Athena.SaveNewReport(report)
 
 	reporterId64 = util.SteamIDTo64(report.reporterId)
 
-	if reportedId then
+	if report.reportedId then
 		reportedId64 = util.SteamIDTo64(report.reportedId)
 	end
 
@@ -104,6 +105,7 @@ function Athena.UpdateReport(report)
 		updateObj:Update("adminname", report.adminName)
 		updateObj:Update("adminid", adminId64)
 		updateObj:Update("status", report.status)
+		updateObj:Update("comments", report.comments)
 		updateObj:Update("rating", report.rating)
 		updateObj:Where("id", report.id)
 	updateObj:Execute()
@@ -134,25 +136,25 @@ end
 -- end
 
 -- Migrate stats from older file-based data storage.
-function Athena:MigrateStats()
-	local dir = "athena/stats"
-	local list = file.Find(dir .. "/*.txt", "DATA")
-	for _, f in pairs(list) do 
-		local directory = dir.."/"..f
+-- function Athena:MigrateStats()
+-- 	local dir = "athena/stats"
+-- 	local list = file.Find(dir .. "/*.txt", "DATA")
+-- 	for _, f in pairs(list) do 
+-- 		local directory = dir.."/"..f
 
-		local id = string.gsub(f, ".txt", "")
-		local data = tonumber(file.Read(path, "DATA")) or 0
+-- 		local id = string.gsub(f, ".txt", "")
+-- 		local data = tonumber(file.Read(path, "DATA")) or 0
 
-		Athena:RetrieveStats(id, function()
-			local num = data
-			Athena:SaveCompleted(ply, num)
-		end)
-	end
+-- 		Athena:RetrieveStats(id, function()
+-- 			local num = data
+-- 			Athena:SaveCompleted(ply, num)
+-- 		end)
+-- 	end
 
-	print("Migrated stats data from I/O.")
-end
+-- 	print("Migrated stats data from I/O.")
+-- end
 
-concommand.Add("athena_data_", Athena:MigrateStats, nil, nil, FCVAR_SERVER_CAN_EXECUTE)
+-- concommand.Add("athena_data_migrate", Athena.MigrateStats, nil, nil, FCVAR_SERVER_CAN_EXECUTE)
 
 function Athena:RetrieveStats(ply, callback)
 	local id = type(ply) == "Player" and ply:SteamID64() or tostring(ply)
@@ -218,8 +220,19 @@ function Athena:AddCompleted(ply)
 end
 
 function Athena:InitStats(id)
+	local ply = player.GetBySteamID64(id)
+	local nick = ""
+	local data = 0
+
+	if ply then
+		local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
+		data = tonumber(file.Read(path, "DATA")) or 0
+		nick = ply:Nick()
+	end
+
 	local insertObj = Athena.mysql:Insert("athena_stats");
-		insertObj:Insert("completed", 0);
+		insertObj:Insert("name", nick);
+		insertObj:Insert("completed", data);
 		insertObj:Insert("rated", 0);
 		insertObj:Insert("rating", 0);
 		insertObj:Insert("id", id);
@@ -264,7 +277,6 @@ end
 
 function Athena:RefreshStats(ply)
 	Athena:RetrieveStats(ply, function(stats)
-		PrintTable(stats)
 		ply:SetNWInt('Athena_CompletedReports', stats.completed)
 		ply:SetNWInt('Athena_Rating', stats.rating)
 		ply:SetNWInt('Athena_RatingNum', stats.rated)

@@ -190,24 +190,9 @@ function Athena.buildMenu()
 
 	Athena.Elements.mainFrame.ToggleMenu = function(self)
 		if Athena.menuOpen then
-			-- Final step after StartToggle & Fade
-			self:SetVisible(false)
 			Athena.initToggle = false
-		else
-			self:SetVisible(true)
-			self:SetMouseInputEnabled(true)
-			createdTime = CurTime()
-			Athena.pageCreated = CurTime()
-	--		for k,v in pairs(Athena.Elements.Avatars) do
-	--			if IsValid(v) then
-	--				v:SetVisible(true)
-	--			end
-	--		end
-			if Athena.currentPage == ATHENA_PAGE_REPORTS then
-				Athena.Elements.drawreportList()
-			end
+			Athena.Elements.mainFrame:Remove()
 		end
-		Athena.menuOpen = !Athena.menuOpen
 
 	end
 
@@ -227,10 +212,9 @@ function Athena.buildMenu()
 		Athena.initRemoveTime = CurTime()
 		self:SetMouseInputEnabled(false)
 		self:SetKeyboardInputEnabled(false)
-		timer.Simple(5, function()
-			oldRemove(self)
-			Athena.menuExists = false
-		end)
+		oldRemove(self)
+
+
 		return
 	end
 
@@ -240,6 +224,8 @@ function Athena.buildMenu()
 
 	Athena.Elements.mainFrame.OnRemove = function()
 		Athena.menuOpen = false
+		Athena.menuExists = false
+		Athena.Elements.blurredBackground:Remove()
 	end
 
 	Athena.Elements.mainFrame.Paint = function(self, w, h)

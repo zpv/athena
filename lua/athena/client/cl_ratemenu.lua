@@ -62,19 +62,9 @@ function Athena.buildRateMenu(reportId)
 				--self:SetKeyboardInputEnabled(false)
 				--self:SetMouseInputEnabled(false)
 				Athena.rateMenu.initToggle = false
-			else
-				self:SetVisible(true)
-				--self:SetKeyboardInputEnabled(true)
-				self:SetMouseInputEnabled(true)
-				createdTime = CurTime()
-				for k,v in pairs(Athena.Elements.Avatars) do
-					if IsValid(v) then
-						v:SetVisible(true)
-					end
-				end
+				self:Remove()
+				Athena.rateMenu.menuOpen = false
 			end
-			Athena.rateMenu.menuOpen = !Athena.rateMenu.menuOpen
-
 		end
 
 		Athena.Elements.rateMenu.mainFrame.StartToggle = function(self)
@@ -86,10 +76,7 @@ function Athena.buildRateMenu(reportId)
 
 		Athena.Elements.rateMenu.mainFrame.oldRemove = Athena.Elements.rateMenu.mainFrame.Remove
 		Athena.Elements.rateMenu.mainFrame.Remove = function(self)
-			timer.Simple(5, function()
 				Athena.Elements.rateMenu.mainFrame.oldRemove(self)
-				Athena.rateMenu.menuExists = false
-			end)
 			return
 		end
 
@@ -98,7 +85,9 @@ function Athena.buildRateMenu(reportId)
 		end
 
 		Athena.Elements.rateMenu.mainFrame.OnRemove = function()
-			Athena.menuOpen = false
+			Athena.rateMenu.menuOpen = true
+			Athena.rateMenu.menuExists = false	
+			Athena.Elements.rateMenu.blurredBackground:Remove()
 		end
 
 		Athena.Elements.rateMenu.mainFrame.Paint = function(self, w, h)

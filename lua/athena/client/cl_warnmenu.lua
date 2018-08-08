@@ -59,19 +59,9 @@ function Athena.buildWarnMenu()
 				--self:SetKeyboardInputEnabled(false)
 				--self:SetMouseInputEnabled(false)
 				Athena.warnMenu.initToggle = false
-			else
-				self:SetVisible(true)
-				--self:SetKeyboardInputEnabled(true)
-				self:SetMouseInputEnabled(true)
-				createdTime = CurTime()
-				for k,v in pairs(Athena.Elements.Avatars) do
-					if IsValid(v) then
-						v:SetVisible(true)
-					end
-				end
+				self:Remove()
+				Athena.warnMenu.menuOpen = false
 			end
-			Athena.warnMenu.menuOpen = !Athena.warnMenu.menuOpen
-
 		end
 
 		Athena.Elements.warnMenu.mainFrame.StartToggle = function(self)
@@ -83,11 +73,8 @@ function Athena.buildWarnMenu()
 
 		Athena.Elements.warnMenu.mainFrame.oldRemove = Athena.Elements.warnMenu.mainFrame.Remove
 		Athena.Elements.warnMenu.mainFrame.Remove = function(self)
-			timer.Simple(5, function()
-				Athena.Elements.warnMenu.mainFrame.oldRemove(self)
-				Athena.warnMenu.menuExists = false
-			end)
-			return
+			Athena.Elements.warnMenu.mainFrame.oldRemove(self)
+
 		end
 
 		Athena.Elements.warnMenu.mainFrame.Close = function(self)
@@ -95,7 +82,8 @@ function Athena.buildWarnMenu()
 		end
 
 		Athena.Elements.warnMenu.mainFrame.OnRemove = function()
-			Athena.menuOpen = false
+			Athena.warnMenu.menuOpen = false
+			Athena.warnMenu.menuExists = false
 		end
 
 		Athena.Elements.warnMenu.mainFrame.Paint = function(self, w, h)

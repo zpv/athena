@@ -59,18 +59,9 @@ function Athena.buildReportMenu()
 				--self:SetKeyboardInputEnabled(false)
 				--self:SetMouseInputEnabled(false)
 				Athena.reportMenu.initToggle = false
-			else
-				self:SetVisible(true)
-				--self:SetKeyboardInputEnabled(true)
-				self:SetMouseInputEnabled(true)
-				createdTime = CurTime()
-				for k,v in pairs(Athena.Elements.Avatars) do
-					if IsValid(v) then
-						v:SetVisible(true)
-					end
-				end
+				Athena.reportMenu.menuOpen = false
+				self:Remove()
 			end
-			Athena.reportMenu.menuOpen = !Athena.reportMenu.menuOpen
 
 		end
 
@@ -83,10 +74,7 @@ function Athena.buildReportMenu()
 
 		Athena.Elements.reportMenu.mainFrame.oldRemove = Athena.Elements.reportMenu.mainFrame.Remove
 		Athena.Elements.reportMenu.mainFrame.Remove = function(self)
-			timer.Simple(5, function()
 				Athena.Elements.reportMenu.mainFrame.oldRemove(self)
-				Athena.reportMenu.menuExists = false
-			end)
 			return
 		end
 
@@ -95,7 +83,9 @@ function Athena.buildReportMenu()
 		end
 
 		Athena.Elements.reportMenu.mainFrame.OnRemove = function()
-			Athena.menuOpen = false
+			Athena.reportMenu.menuOpen = false
+			Athena.reportMenu.menuExists = false
+			Athena.Elements.reportMenu.blurredBackground:Remove()
 		end
 
 		Athena.Elements.reportMenu.mainFrame.Paint = function(self, w, h)
