@@ -17,6 +17,7 @@ include("cl_reports.lua")
 include("cl_reportmenu.lua")
 include("cl_warnings.lua")
 include("cl_warnmenu.lua")
+include("cl_ratemenu.lua")
 
 ATHENA_PAGE_OVERVIEW 	= 1;
 ATHENA_PAGE_REPORTS		= 2;
@@ -189,24 +190,9 @@ function Athena.buildMenu()
 
 	Athena.Elements.mainFrame.ToggleMenu = function(self)
 		if Athena.menuOpen then
-			-- Final step after StartToggle & Fade
-			self:SetVisible(false)
 			Athena.initToggle = false
-		else
-			self:SetVisible(true)
-			self:SetMouseInputEnabled(true)
-			createdTime = CurTime()
-			Athena.pageCreated = CurTime()
-	--		for k,v in pairs(Athena.Elements.Avatars) do
-	--			if IsValid(v) then
-	--				v:SetVisible(true)
-	--			end
-	--		end
-			if Athena.currentPage == ATHENA_PAGE_REPORTS then
-				Athena.Elements.drawreportList()
-			end
+			Athena.Elements.mainFrame:Remove()
 		end
-		Athena.menuOpen = !Athena.menuOpen
 
 	end
 
@@ -226,10 +212,9 @@ function Athena.buildMenu()
 		Athena.initRemoveTime = CurTime()
 		self:SetMouseInputEnabled(false)
 		self:SetKeyboardInputEnabled(false)
-		timer.Simple(5, function()
-			oldRemove(self)
-			Athena.menuExists = false
-		end)
+		oldRemove(self)
+
+
 		return
 	end
 
@@ -239,6 +224,8 @@ function Athena.buildMenu()
 
 	Athena.Elements.mainFrame.OnRemove = function()
 		Athena.menuOpen = false
+		Athena.menuExists = false
+		Athena.Elements.blurredBackground:Remove()
 	end
 
 	Athena.Elements.mainFrame.Paint = function(self, w, h)
@@ -463,6 +450,21 @@ function Athena.buildMenu()
 		draw.RoundedBox( 4, 1, 1, w-2, h-2, Color( 200, 200, 200, 80*alpha ))
 		draw.SimpleText("Completed Reports ", "AthenaOswald20Light", w / 2, 11, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
 		draw.SimpleText(Athena.Client.CompletedReports, "AthenaOswald25Normal", w / 2, 32, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+	end
+
+	if Athena.Configuration.StaffRatings then
+		Athena.Elements.ratingCard = vgui.Create("Panel", Athena.Elements.mainFrame)
+		Athena.Elements.ratingCard:SetPos( 70, 300)
+		Athena.Elements.ratingCard:SetSize( 120, 67)
+
+		Athena.Elements.ratingCard.Paint = function(self, w, h)
+			draw.RoundedBox( 4, 0, 0, w, h, Color( 150, 150, 150, 120*alpha ))
+			draw.RoundedBox( 4, 1, 1, w-2, h-2, Color( 200, 200, 200, 80*alpha ))
+			draw.SimpleText("Your Rating", "AthenaOswald20Light", w / 2, 11, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+			draw.SimpleText(Athena.Client.AverageRating .. " / 5", "AthenaOswald25Normal", w / 2, 32, Color(55, 55, 55, 255 * alpha), TEXT_ALIGN_CENTER)
+		end
+
+		Athena.Elements.ratingCard:MoveTo(340, 50,0.3,0,0.2)
 	end
 
 	--[[

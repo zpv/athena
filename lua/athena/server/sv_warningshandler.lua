@@ -33,17 +33,17 @@ Athena.Server.filterOldWarnings = function(warnings)
 end
 
 Athena.Server.sendWarnings = function(ply, targetUID)
-	local targetWarnings = Athena:RetrieveWarnings(targetUID)
+	Athena:RetrieveWarnings(targetUID, function(targetWarnings)
+		targetWarnings = Athena.Server.filterOldWarnings(targetWarnings)
 
-	targetWarnings = Athena.Server.filterOldWarnings(targetWarnings)
+		net.Start("Athena_TransferWarnings")
+		net.WriteString(targetUID)
+		net.WriteTable(targetWarnings)
+		net.Send(ply)
 
-	net.Start("Athena_TransferWarnings")
-	net.WriteString(targetUID)
-	net.WriteTable(targetWarnings)
-	net.Send(ply)
-
-	net.Start("Athena_WarningsQueueFinish")
-	net.Send(ply)
+		net.Start("Athena_WarningsQueueFinish")
+		net.Send(ply)
+	end)
 end
 
 Athena.Server.WarnPlayer = function(target, description, severity, warner)
@@ -55,49 +55,48 @@ Athena.Server.WarnPlayer = function(target, description, severity, warner)
 	newWarning["description"] = description
 	newWarning["severity"] = severity
 	newWarning["warner"] = warner:Nick()
+	newWarning["warnerid"] = warner:SteamID64()
 
-	
+	Athena:RetrieveWarnings(target, function(targetWarnings)
+		table.insert(targetWarnings, newWarning)
+		Athena:SaveWarnings(target, targetWarnings)	
 
-	local targetWarnings = Athena:RetrieveWarnings(target)
-	table.insert(targetWarnings, newWarning)
-	Athena:SaveWarnings(target, targetWarnings)
-
-	net.Start("Athena_warnNotify")
-	net.WriteString(warner:Nick())
-	local playerEntity = player.GetBySteamID64(target)
-	if playerEntity:IsValid() then net.WriteString(playerEntity:Nick()) else
-		net.WriteString(Athena.CommunityIDToSteamID(target))
-	end
-	net.WriteString(description)
-	net.WriteUInt(severity, 2)
-	net.Broadcast()
-
-	local totalSeverity = 0
-	local ply = player.GetBySteamID64(target)
-
-	for k,v in pairs(Athena.Server.filterOldWarnings(targetWarnings)) do
-		totalSeverity = totalSeverity + tonumber(v["severity"])
-	end
-
-	local max = 0
-	local index = -1
-
-	for k,v in pairs(Athena.Configuration.WarningThresholds) do
-		if totalSeverity >= v[1] && v[1] > max then
-			index = k
-			max = v[1]
+		net.Start("Athena_warnNotify")
+		net.WriteString(warner:Nick())
+		local playerEntity = player.GetBySteamID64(target)
+		if playerEntity:IsValid() then net.WriteString(playerEntity:Nick()) else
+			net.WriteString(Athena.CommunityIDToSteamID(target))
 		end
-	end
+		net.WriteString(description)
+		net.WriteUInt(severity, 2)
+		net.Broadcast()
 	
-	if index != -1 then
-		local row = Athena.Configuration.WarningThresholds[index]
-		if row[2] == "kick" then
-			Athena.kick(ply, "[Athena] Kicked for reaching warning threshhold. Exceeding " .. max .. " severity")
-		elseif row[2] == "ban" then
-			Athena.ban(ply, row[3], "[Athena] Banned for reaching warning threshhold. Exceeding " .. max .. " severity")
+		local totalSeverity = 0
+		local ply = player.GetBySteamID64(target)
+	
+		for k,v in pairs(Athena.Server.filterOldWarnings(targetWarnings)) do
+			totalSeverity = totalSeverity + tonumber(v["severity"])
 		end
-	end
-
+	
+		local max = 0
+		local index = -1
+	
+		for k,v in pairs(Athena.Configuration.WarningThresholds) do
+			if totalSeverity >= v[1] && v[1] > max then
+				index = k
+				max = v[1]
+			end
+		end
+		
+		if index != -1 then
+			local row = Athena.Configuration.WarningThresholds[index]
+			if row[2] == "kick" then
+				Athena.kick(ply, "[Athena] Kicked for reaching warning threshhold. Exceeding " .. max .. " severity")
+			elseif row[2] == "ban" then
+				Athena.ban(ply, row[3], "[Athena] Banned for reaching warning threshhold. Exceeding " .. max .. " severity")
+			end
+		end
+	end)
 end
 
 net.Receive("Athena_SendWarning", function(len, ply)
@@ -115,14 +114,15 @@ net.Receive("Athena_RemoveWarning", function(len, ply)
 	local warningTime = tonumber(net.ReadString())
 	local playerID = net.ReadString()
 
-	local targetWarnings = Athena:RetrieveWarnings(playerID)
-	for k,v in pairs(targetWarnings) do
-		if v["time"] == tonumber(warningTime) then
-			table.remove(targetWarnings, k)
+	Athena:RetrieveWarnings(playerID, function(targetWarnings)
+		for k,v in pairs(targetWarnings) do
+			if v["time"] == tonumber(warningTime) then
+				table.remove(targetWarnings, k)
+			end
 		end
-	end
-
-	Athena:SaveWarnings(playerID, targetWarnings)
+	
+		Athena:SaveWarnings(playerID, targetWarnings)
+	end)
 
 	--Athena.Server.sendWarnings(ply, targetUID)
 end)

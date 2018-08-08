@@ -6,9 +6,9 @@
 
 Athena = Athena or {}
 if SERVER then
-	Athena.Server = {}
+	Athena.Server = Athena.Server or {}
 else
-	Athena.Client = {}
+	Athena.Client = Athena.Client or {}
 end
 
 Athena.Configuration = {}
