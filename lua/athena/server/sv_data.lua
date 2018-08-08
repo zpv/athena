@@ -43,6 +43,7 @@ function Athena.InitDatabase()
 	local warningsTableQuery = Athena.mysql:Create("athena_warnings")
 		warningsTableQuery:Create("id", "VARCHAR(17) NOT NULL")
 		warningsTableQuery:Create("data", "TEXT")
+		warningsTableQuery:PrimaryKey("id");
 
 	warningsTableQuery:Execute()
 
@@ -104,9 +105,9 @@ function Athena.UpdateReport(report)
 	local updateObj = Athena.mysql:Update("athena_reports")
 		updateObj:Update("adminname", report.adminName)
 		updateObj:Update("adminid", adminId64)
-		updateObj:Update("status", report.status)
-		updateObj:Update("comments", report.comments)
-		updateObj:Update("rating", report.rating)
+		updateObj:Update("status", report.status or 0)
+		updateObj:Update("comments", report.comments or "")
+		updateObj:Update("rating", report.rating or 0)
 		updateObj:Where("id", report.id)
 	updateObj:Execute()
 end
