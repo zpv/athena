@@ -15,9 +15,9 @@ ATHENA_NOTIFICATION_COMPLETE 	= 3
 
 Athena.Notifications.Actions = {
 	[ATHENA_NOTIFICATION_REPORT] = function(details) Athena.Notifications.drawNotification(4, details[1] .. " has submitted a report" .. ((details[2] != nil) and (" on " .. details[2]) or ".")) surface.PlaySound("athena/notifications/newreport.mp3") end,
-	[ATHENA_NOTIFICATION_COMPLETE] = function(details) Athena.Notifications.drawNotification(2, details[2] .. " updated the status of " .. details[3] .. "'s report to complete.") Athena.Client.ReportStatuses[tonumber(details[1])] = ATHENA_STATUS_COMPLETED surface.PlaySound("athena/notifications/statuscomplete.mp3") end,
-	[ATHENA_NOTIFICATION_ONGOING] = function(details) Athena.Notifications.drawNotification(2, details[2] .. " updated the status of " .. details[3] .. "'s report to ongoing.") Athena.Client.ReportStatuses[tonumber(details[1])] = ATHENA_STATUS_INPROGRESS surface.PlaySound("athena/notifications/statusongoing.mp3") end,
-	[ATHENA_NOTIFICATION_WAITING] = function(details) Athena.Notifications.drawNotification(2, details[2] .. " updated the status of " .. details[3] .. "'s report to waiting.") Athena.Client.ReportStatuses[tonumber(details[1])] = ATHENA_STATUS_WAITING surface.PlaySound("athena/notifications/statusongoing.mp3") end,
+	[ATHENA_NOTIFICATION_COMPLETE] = function(details) Athena.Notifications.drawNotification(2, details[2] .. " updated the status of " .. details[3] .. "'s report to complete.") Athena.Client.Reports[tonumber(details[1])].status = ATHENA_STATUS_COMPLETED surface.PlaySound("athena/notifications/statuscomplete.mp3") end,
+	[ATHENA_NOTIFICATION_ONGOING] = function(details) Athena.Notifications.drawNotification(2, details[2] .. " updated the status of " .. details[3] .. "'s report to ongoing.") Athena.Client.Reports[tonumber(details[1])].status = ATHENA_STATUS_INPROGRESS surface.PlaySound("athena/notifications/statusongoing.mp3") end,
+	[ATHENA_NOTIFICATION_WAITING] = function(details) Athena.Notifications.drawNotification(2, details[2] .. " updated the status of " .. details[3] .. "'s report to waiting.") Athena.Client.Reports[tonumber(details[1])].status = ATHENA_STATUS_WAITING surface.PlaySound("athena/notifications/statusongoing.mp3") end,
 	[ATHENA_NOTIFICATION_RATED]	  = function(details) Athena.Notifications.drawNotification(5, details[1] .. " rated your report: " .. details[2] .. "/5") surface.PlaySound("athena/notifications/statuscomplete.mp3") end
 }
 
