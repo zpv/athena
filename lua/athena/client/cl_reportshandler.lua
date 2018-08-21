@@ -121,11 +121,7 @@ net.Receive("Athena_QueueFinish", function(len)
 	end
 end)
 
-<<<<<<< HEAD
 hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestReports") net.SendToServer() net.Start("Athena_RequestStats") net.SendToServer() end end)
-=======
-hook.Add("InitPostEntity","FirstRequestStatuses", function() if Athena.hasPermission(LocalPlayer()) then net.Start("Athena_RequestStats") net.SendToServer() end end)
->>>>>>> c2958a5c16a8a54c95e159a6870bd802164cb224
 
 concommand.Add("athena_stats", function()
 	if LocalPlayer():IsAdmin() then
