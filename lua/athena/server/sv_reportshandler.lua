@@ -43,16 +43,10 @@ Athena.Server.sendReports = function(ply)
 
 			net.Send(ply)
 			Athena.Server.SentReports[ply:SteamID()][v.id] = true
-			if count == #Athena.Server.Reports then
-				net.Start("Athena_QueueFinish")
-				net.Send(ply)
-			end
 		end
 	end
-	if sentCount == 0 then
-		net.Start("Athena_QueueFinish")
-		net.Send(ply)
-	end
+	net.Start("Athena_QueueFinish")
+	net.Send(ply)
 end
 
 net.Receive("Athena_RequestRating", function(len, ply)

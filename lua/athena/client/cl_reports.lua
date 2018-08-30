@@ -265,7 +265,12 @@ function Athena.openReports()
 		Athena.Elements.reportList:SetPos( 0, 0 )
 		Athena.Elements.reportList:SetSpaceY( 5 )
 		Athena.HideCompleted = true
-		Athena.Elements.reportList.reportsCopy = table.Copy(Athena.Client.Reports)
+		Athena.Elements.reportList.reportsCopy = {}
+		for k,v in pairs(Athena.Client.Reports) do
+			if v then
+				table.insert(Athena.Elements.reportList.reportsCopy, v)
+			end
+		end
 		table.sort(Athena.Elements.reportList.reportsCopy, function(a, b) return a.time < b.time end)
 		for k,v in pairs(Athena.Elements.reportList.reportsCopy) do 
 			if not (Athena.HideCompleted and Athena.Client.Reports[tonumber(v.id)].status == ATHENA_STATUS_COMPLETED) then
@@ -301,7 +306,7 @@ function Athena.openReports()
 
 				ListItem.DoClick = function(self)
 					Athena.Tick()
-					selectedReportID = k
+					selectedReportID = v.id
 					Athena.reportCreated = CurTime()
 					Athena.reportAlpha = 0
 					Athena.Elements.reportDetails:SetVisible(true)
