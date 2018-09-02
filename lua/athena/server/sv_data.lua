@@ -227,7 +227,7 @@ function Athena:InitStats(id)
 
 	if ply then
 		local path = "athena/stats/" .. ply:UniqueID() .. ".txt"
-		data = tonumber(file.Read(path, "DATA")) or 0
+		data = tonumber(file.Read(path, "DATA") or 0)
 		nick = ply:Nick()
 	end
 
