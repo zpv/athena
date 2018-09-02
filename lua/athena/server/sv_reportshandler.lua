@@ -49,6 +49,16 @@ Athena.Server.sendReports = function(ply)
 	net.Send(ply)
 end
 
+Athena.Server.sendReport = function(report, ply)
+	
+	if ply then
+		net.Start("Athena_TransferReports")
+		net.WriteTable(report)
+		net.Send(ply)
+	end
+
+end
+
 net.Receive("Athena_RequestRating", function(len, ply)
 	local reportId = net.ReadInt(16)
 	local rating = net.ReadInt(16)
@@ -151,6 +161,8 @@ net.Receive("Athena_SendReport", function(len, ply)
 	--table.insert(Athena.Server.ReportStatuses, ATHENA_STATUS_WAITING)
 
 	Athena.Notifications.startNotification(ATHENA_NOTIFICATION_REPORT, {ply:Nick(), reportedPlayer}, ply)
+
+	Athena.Server.sendReport(report, ply)
 
 	for k,v in pairs(player.GetAll()) do
 		if Athena.hasPermission(v) then
