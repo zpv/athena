@@ -118,7 +118,7 @@ net.Receive("Athena_TransferStatuses", function(len, ply)
 
 	Athena.UpdateReport(report)
 
-	if (reportStatus == ATHENA_STATUS_COMPLETED and (not report.rating or report.rating == 0)) then 
+	if (reportStatus == ATHENA_STATUS_COMPLETED and (not report.rating or report.rating == 0) and reporter) then 
 		Athena.Server.requestRating(reporter, report.id)
 	end
 	
